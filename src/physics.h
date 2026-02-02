@@ -22,7 +22,7 @@ struct Sun {
 //  loosely based on NOAA 19 
 class Phys {
 public:
-    float deltaTime = 10;
+    float step_time = 1;
     Earth planet;
     Sun home;
     //  Earth Centered Inertial, Cartesian coordinates pulled from GMAT
@@ -50,12 +50,12 @@ public:
     float Cd, Cr;  
 
     //  Step forward
-    void step();
+    void step(float sdl_dt);
 
     void kick_motor(float newtons);
 
     float solar_panel_directivity(linalg::vec<float,3> local_panel_normal);
 private:
-    void leap_frog();
+    void leap_frog(float sdl_dt);
     linalg::vec<float,3> grav_f();
 };

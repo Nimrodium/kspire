@@ -2,13 +2,14 @@
 
 
 
-void Phys::step() {
+void Phys::step(float sdl_dt) {
     //Add mass
     TOTAL_MASS = dry_mass + STAR_37_XFB_FUEL + HYDRAZINE_FUEL + COLD_GAS_FUEL;
     
+    //test clamper
 
     //Run VEL
-    leap_frog();
+    leap_frog(sdl_dt);
     
     //Zero acc before stepping next
     T_ACC = linalg::vec<float,3> { 0,0,0 };
@@ -38,9 +39,12 @@ linalg::vec<float,3> Phys::grav_f() {
 }
 
 //  Step forward
-void Phys::leap_frog() {
+void Phys::leap_frog(float sdl_dt) {
+
+    //Accumulation maybe?
+    
     linalg::vec<float,3> acc_curr;
-    float ddt = (float) deltaTime;
+    float ddt = (float) step_time * sdl_dt;
 
     //Current time sep acceleration
     acc_curr = grav_f(); 

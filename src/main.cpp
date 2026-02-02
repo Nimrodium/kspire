@@ -1,5 +1,23 @@
 #include "../include/angel/angel.h"
 #include "physics.h"
+#include <SDL/SDL_config.h>
+#include <SDL/SDL.h>
+#include <os.h>
+
+struct DT {
+    float dt = 0;
+    float dt_last = 0;
+
+	void init() {
+		dt_last = SDL_GetTicks() * 0.001f;
+	}
+    void tick() {
+        float dt_now = SDL_GetTicks() * 0.001f;
+        dt = dt_now - dt_last;
+        dt_last = dt_now;
+    }
+};
+
 
 template <typename T> T clamp(T in, T min, T max) {
     if (in < min) { return min; }
@@ -37,9 +55,16 @@ linalg::vec<float,3> Camera::wrapper() {
 
 Camera cam;
 
+
 int main()
 {
-    physics.step();
+
+    DT clock;	
+	if (!is_touchpad) { return 0;} //Only CX/CXII supported
+	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
+    
+
+    //Load
     Bundle assets;
 
     if (assets.load_asset_bundle("mars.tar.gz.tns")) {
@@ -83,6 +108,8 @@ int main()
     for(auto &&obj : scene) {if (obj == nullptr) { return 1;} } //Exit if any objects are missing
 
 
+    //Unload tar
+    assets.free();
 
     // Initialize nGL first
     nglInit();
@@ -102,25 +129,31 @@ int main()
 
     int big_counter = 0;
 
+
+    //FIRST GAME STEP
+    physics.step(0.1f);
+
+
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))
     #else
     for(unsigned int i = 1300;--i;)
     #endif
     {
+        clock.tick(); //deltatime
         angle += 1;
 
 
         if (isKeyPressed(KEY_NSPIRE_Z)) {
-            physics.deltaTime += 5;
+            physics.step_time += 10;
         }
         if (isKeyPressed(KEY_NSPIRE_X)) {
-           physics.deltaTime -= 5; if (physics.deltaTime <= 1) physics.deltaTime = 1;
+           physics.step_time = 1; if (physics.step_time <= 1) physics.step_time = 1;
         }
 
         //This chunk could use a LOT of optimization.
         {
-            float rot_speed = 0.9f;
+            float rot_speed = 1.16f;
             linalg::vec<float,2> dpad_vector = { 0,0 };
             if (isKeyPressed(KEY_NSPIRE_W)) {
                 dpad_vector.y -= rot_speed;
@@ -246,9 +279,9 @@ int main()
 
         nglDisplay();
         big_counter ++;
-        planet_angle -= 0.0002f * physics.deltaTime;
+        planet_angle -= 0.0002f * physics.step_time * clock.dt;
 
-        physics.step();
+        physics.step(clock.dt);
     }
 
     group_mars.free_group();
