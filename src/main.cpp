@@ -12,7 +12,22 @@ Phys physics;
 struct Camera {
     float pitch,roll,yaw = 0;
     linalg::vec<float,3> pos;
+    linalg::vec<float,3>  wrapper();
+
+    private:
+    float clamp_rotation_helper(float in);
 };
+
+float Camera::clamp_rotation_helper(float in) {
+    in = fmod(in, 360.0f);
+    if (in < 0) in += 360.0f;
+    return in;
+}
+//Fix under/over rotation
+linalg::vec<float,3> Camera::wrapper() {
+    return linalg::vec<float,3> {clamp_rotation_helper(-pitch), clamp_rotation_helper(-yaw), clamp_rotation_helper(-roll)};
+}
+
 
 Camera cam;
 
@@ -63,8 +78,6 @@ int main()
 
 
 
-    /* VOGTINATOR CODE */
-
     // Initialize nGL first
     nglInit();
     // Allocate the framebuffer
@@ -91,60 +104,81 @@ int main()
     {
         angle += 1;
 
+
+
+        //This chunk could use a LOT of optimization.
+        {
+            float rot_speed = 0.9f;
+            linalg::vec<float,2> dpad_vector = { 0,0 };
+            if (isKeyPressed(KEY_NSPIRE_W)) {
+                dpad_vector.y -= rot_speed;
+            }
+            if (isKeyPressed(KEY_NSPIRE_S)) {
+                dpad_vector.y += rot_speed;
+            }
+            if (isKeyPressed(KEY_NSPIRE_A)) {
+                dpad_vector.x -= rot_speed;
+            }
+            if (isKeyPressed(KEY_NSPIRE_D)) {
+                dpad_vector.x += rot_speed;
+            }
+            //Make it move at a consistent speed
+            float dpad_norm = sqrt((dpad_vector.x * dpad_vector.x) + (dpad_vector.y * dpad_vector.y));
+            if (dpad_norm > 0.0001f) {
+                dpad_vector /= dpad_norm;
+                dpad_vector *= rot_speed;
+            }
+            
+            //Apply
+            cam.yaw += dpad_vector.x;
+            cam.pitch += dpad_vector.y;
+        }
+        // }if (isKeyPressed(KEY_NSPIRE_Q)) {
+        //     cam.roll -= .30f;
+        // }
+        // if (isKeyPressed(KEY_NSPIRE_E)) {
+        //     cam.roll += .30f;
+        // }
+
+
+
         glPushMatrix(); //World inverse
 		glColor3f(0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        //Move back
+        cam.pos.x = 0;
+        cam.pos.y = 0;
+        cam.pos.z = -200;
+        glTranslatef(-cam.pos.x, -cam.pos.y, -cam.pos.z);
+
         //Camera rotation
-        nglRotateX(-cam.pitch);
-        nglRotateY(-cam.yaw);
-        nglRotateZ(-cam.roll);
+        linalg::vec<float,3> out = cam.wrapper();
+        nglRotateX(out.x);
+        nglRotateY(out.y);
+        nglRotateZ(out.z);
 
         //Move physics to vessel
-        cam.pos.x = 3;
-        cam.pos.y = 3;
-        cam.pos.z = 3;
-        glTranslatef(-cam.pos.x, -cam.pos.y, -cam.pos.z);
+
 
 
         //PLANET
         glPushMatrix();
-        //nglRotateX(30);
-        //nglRotateZ(40);
-		//nglRotateY(((GLFix)planet_angle).normaliseAngle());
 
-
-        // glTranslatef(
-        //     -physics.POS.x  / 100,
-        //     -physics.POS.y  / 100,
-        //     -physics.POS.z   / 100
-        // );
-
-
-        if (isKeyPressed(KEY_NSPIRE_W)) {
-            //altitude_multiplier += 1;
-        }
-        if (isKeyPressed(KEY_NSPIRE_S)) {
-            //altitude_multiplier -= 1;
-        }
-        
         //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
 
-        float distance_from_planet = sqrtf(
-             ((physics.POS.x)*
-              (physics.POS.x))+
-             ((physics.POS.y)*
-              (physics.POS.y))+
-             ((physics.POS.z)*
-              (physics.POS.z))
-        );
+        float len = sqrtf(physics.POS.x*physics.POS.x +
+            physics.POS.y*physics.POS.y +
+            physics.POS.z*physics.POS.z);
         //distance_from_planet *= altitude_multiplier;
+        len *= 50;   //debug
         //3000 meter bubble
-        float fixed_bubble = 3000;
+        float fixed_bubble = 1000;
         glTranslatef(
-            -(physics.POS.x  / distance_from_planet)* fixed_bubble        * 0,
-            -(physics.POS.y  / distance_from_planet)* fixed_bubble        * 0,
-            -(physics.POS.z   / distance_from_planet)* fixed_bubble       * 0
+            -(physics.POS.x  / len)* fixed_bubble        * 0,
+            -(physics.POS.y  / len)* fixed_bubble        * 0,
+            -(physics.POS.z   / len)* fixed_bubble       * 0
         );
         glTranslatef(0,0,fixed_bubble);
 
@@ -154,7 +188,7 @@ int main()
         nglRotateY(normd.normaliseAngle());
 
         float mars_radius = 3389500;
-        float angularRadius = mars_radius / distance_from_planet;
+        float angularRadius = mars_radius / len;
         float renderRadius  = angularRadius * fixed_bubble;
 
         glScale3f(renderRadius, renderRadius, renderRadius);
@@ -173,13 +207,13 @@ int main()
         //CAPSULE
         glPushMatrix();
 
-		glTranslatef(0, -0, 200);
+		glTranslatef(0, 0, 0);
 
         nglRotateX(200);
         nglRotateZ(300);
 		nglRotateY(270);
-        nglRotateX(angle.normaliseAngle());
-        nglRotateY(angle.normaliseAngle());
+        //nglRotateX(angle.normaliseAngle());
+        //nglRotateY(angle.normaliseAngle());
 
 
         glScale3f(20, 20, 20);
