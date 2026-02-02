@@ -105,6 +105,12 @@ int main()
         angle += 1;
 
 
+        if (isKeyPressed(KEY_NSPIRE_Z)) {
+            physics.deltaTime += 5;
+        }
+        if (isKeyPressed(KEY_NSPIRE_X)) {
+           physics.deltaTime -= 5; if (physics.deltaTime <= 1) physics.deltaTime = 1;
+        }
 
         //This chunk could use a LOT of optimization.
         {
@@ -171,16 +177,17 @@ int main()
         float len = sqrtf(physics.POS.x*physics.POS.x +
             physics.POS.y*physics.POS.y +
             physics.POS.z*physics.POS.z);
+            
         //distance_from_planet *= altitude_multiplier;
-        len *= 50;   //debug
+
         //3000 meter bubble
-        float fixed_bubble = 1000;
+        float fixed_bubble = 3000;
         glTranslatef(
-            -(physics.POS.x  / len)* fixed_bubble        * 0,
-            -(physics.POS.y  / len)* fixed_bubble        * 0,
-            -(physics.POS.z   / len)* fixed_bubble       * 0
+            -(physics.POS.x  / len)* fixed_bubble        * 1,
+            -(physics.POS.y  / len)* fixed_bubble        * 1,
+            -(physics.POS.z   / len)* fixed_bubble       * 1
         );
-        glTranslatef(0,0,fixed_bubble);
+//        glTranslatef(0,0,fixed_bubble);
 
 
         //Debug rotation
@@ -188,7 +195,7 @@ int main()
         nglRotateY(normd.normaliseAngle());
 
         float mars_radius = 3389500;
-        float angularRadius = mars_radius / len;
+        float angularRadius = mars_radius / len;    //NTS: MAKE THIS REFERENCE CELESTIAL (but make sure it can do moons too so detached. run this for each visible planet?)
         float renderRadius  = angularRadius * fixed_bubble;
 
         glScale3f(renderRadius, renderRadius, renderRadius);
@@ -232,7 +239,7 @@ int main()
 
         nglDisplay();
         big_counter ++;
-        planet_angle += 1.1f;
+        planet_angle += 0.02f;
 
         physics.step();
     }
