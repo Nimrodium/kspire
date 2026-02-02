@@ -1,6 +1,12 @@
 #include "../include/angel/angel.h"
 #include "physics.h"
 
+template <typename T> T clamp(T in, T min, T max) {
+    if (in < min) { return min; }
+    if (in > max) { return max; }
+    return in;
+} 
+
 inline float clamp(float x, float min, float max) {
     if (x < min) {return min;}
     if (x > max) {return max;}
@@ -138,6 +144,10 @@ int main()
             //Apply
             cam.yaw += dpad_vector.x;
             cam.pitch += dpad_vector.y;
+            //clamp pitch
+            if (cam.pitch > 89) cam.pitch = 89;
+            if (cam.pitch < -89) cam.pitch = -89;
+             
         }
         // }if (isKeyPressed(KEY_NSPIRE_Q)) {
         //     cam.roll -= .30f;
@@ -160,15 +170,12 @@ int main()
         glTranslatef(-cam.pos.x, -cam.pos.y, -cam.pos.z);
 
         //Camera rotation
-        linalg::vec<float,3> out = cam.wrapper();
+        linalg::vec<float,3> out = cam.wrapper();   //Outputs rpy as actual clamped values good for ngl
         nglRotateX(out.x);
         nglRotateY(out.y);
         nglRotateZ(out.z);
 
-        //Move physics to vessel
-
-
-
+        
         //PLANET
         glPushMatrix();
 
@@ -239,7 +246,7 @@ int main()
 
         nglDisplay();
         big_counter ++;
-        planet_angle += 0.02f;
+        planet_angle -= 0.0002f * physics.deltaTime;
 
         physics.step();
     }
