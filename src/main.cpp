@@ -88,7 +88,13 @@ int main()
     //notice: .obj extension is ommited! house.obj becomes house, as house.mtl and house.png are all likely to coexist. and make it easier to keep track in my head
     //Objects and groups in the .obj file are treated as *the same* (for now).
 
-
+    //Neat way to store all ngl_objects.
+    const ngl_object *scene[] = {
+        planet,
+        capsule,
+        //cloud
+    };
+    
     if (group_mars.load_group(&assets,"mars")) return 1;
     if (group_cap.load_group(&assets,"capsule")) return 1;
 
@@ -100,23 +106,13 @@ int main()
         //Load our objects from the group
     planet = group_mars.get_object("Sphere");
     capsule = group_cap.get_object("MK1");
-
-
-    //Neat way to store all ngl_objects.
-    const ngl_object *scene[] = {
-        planet,
-        capsule,
-        //cloud
-    };
-    for(auto &&obj : scene) {if (obj == nullptr) { return 1;} } //Exit if any objects are missing
+    scene[0] = planet;
+    scene[1] = capsule;
 
 
     
+    for(auto &&obj : scene) {if (obj == nullptr) {printf("MISSING\n"); return 1;} } //Exit if any objects are missing
 
-    //CLEANUP TEST
-    //group_mars.free_group();
-    //group_cap.free_group();
-    
 
     //Unload tar
     assets.free();
@@ -249,7 +245,7 @@ int main()
         float renderRadius  = angularRadius * fixed_bubble;
 
         glScale3f(renderRadius, renderRadius, renderRadius);
-
+        
 
         //glScale3f(20, 20, 20);
         //would do planet pos here
@@ -295,11 +291,12 @@ int main()
     }
 
     group_mars.free_group();
+    group_cap.free_group();
 
     delete[] processed;
     // Deinitialize nGL
     nglUninit();
     deleteTexture(screen);
-
+    SDL_Quit();
     return 0;
 }
