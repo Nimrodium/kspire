@@ -4,6 +4,8 @@
 #include <SDL/SDL.h>
 #include <os.h>
 
+using namespace::angel;
+
 struct DT {
     float dt = 0;
     float dt_last = 0;
