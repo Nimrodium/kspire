@@ -6,6 +6,7 @@
 
 class Vessel {
     public:
+
     enum Situation {
         LANDED,
         SPLASHED,
@@ -22,11 +23,13 @@ class Vessel {
         DEAD
     };
 
+    
     ProtoVessel protoVessel;
-
-    //Is loaded?
-    bool loaded;
-
+    
+    //Are parts loaded? (Also Physics range)
+    bool loaded = false;
+    //Is this the current controller?    
+    bool is_focused = false;
 
     std::vector<Part> part_tree;
 

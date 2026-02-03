@@ -5,8 +5,8 @@ class Part {
     public:
     bool attached;
     float aerodynamicArea;
-    linalg::vec<float,3> attPos
-    linalg::rotation_quat attRotation;
+    linalg::vec<float,3> attPos;
+    linalg::vec<float,4> attRotation;
 
     std::vector<Part> children;    
     

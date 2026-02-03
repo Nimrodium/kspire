@@ -3,7 +3,7 @@
 
 class ProtoVessel {
     public:
-    uint persistentId;
+    uint16_t persistentId;
     bool vesselSpawning;
     bool landed;
     bool splashed;
@@ -17,7 +17,7 @@ class ProtoVessel {
     double distanceTraveled;
 
     //In scene, rather volatile
-    Transform transform;
+    //Transform transform;
     
 
     float altitude;
@@ -39,7 +39,7 @@ class ProtoVessel {
 
     linalg::vec<float,3> velocity;
 
-    linalg::rotation_quat rotation;
+    linalg::vec<float,4> rotation;
 
     private:
 };
