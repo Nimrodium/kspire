@@ -50,5 +50,6 @@ class Universe {
     void render();
 
     Bundle planet_bundle;
+    Bundle resource_bundle;
     private:
 };

@@ -94,6 +94,18 @@ void Universe::step() {
     clock.tick();
     cam.camera_controller(Camera::FREE);
 
+    //Update focused vessel, in case # of vessels changes. Avoids std::vector fuckery messing with the pointer i think?
+    //Is this necessary? if so, i should recalc this ONLY if the vessels.size() changes.
+    focused_vessel = nullptr;
+    for (Vessel &v : vessels) {
+        if (v.is_focused) {
+            focused_vessel = &v;    break;
+        }
+    }
+
+
+
+    //Timewarp keys, move this to a TimewarpController
     if (isKeyPressed(KEY_NSPIRE_Z)) {
         phys_warp_rate += 10;
     }
@@ -101,16 +113,14 @@ void Universe::step() {
         phys_warp_rate = 1; if (phys_warp_rate <= 1) phys_warp_rate = 1;
     }
 
+    //Debug to swap texture of planet
     if(isKeyPressed(KEY_NSPIRE_ENTER)) {
-        if (celestials[0].switch_texture("mars.png") != 0) {
+        if (celestials[0].switch_texture("luna.png") != 0) {
             printf("ERROR\n");
         }
     }
 
-    for (Vessel& v : vessels) {
-        if (v.is_focused) { focused_vessel = &v; break;}
-    }
-
+    //Step vessel orbits
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated
         if (v.loaded) {
@@ -123,8 +133,11 @@ void Universe::step() {
 
 
 
+    //Deltatime stuff
     cam.dt = clock.dt;
 
+
+    //Render
     render();
 }
 
@@ -171,6 +184,10 @@ void Universe::render() {
 
 
 int Universe::load_bundles() {
+    if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
+        printf("Asset load error!!");
+        return 1;
+    }
     if (planet_bundle.load_asset_bundle("body.tar.gz.tns")) {
         printf("Asset load error!!");
         return 1;

@@ -1,6 +1,6 @@
 #include "globals.h"
 #include "universe.h"
-
+#include "Utility/font.h"
 
 
 
@@ -16,29 +16,42 @@ inline float clamp(float x, float min, float max) {
     return x;
 }
 
-
+enum GameStates {
+    MENU,
+    BUILD,
+    FLIGHT,
+};
 
 
 
 
 Universe uni;
 
+Fonts fonts;
+
 int main()
 {
 
-    if (uni.load_bundles()) {return 1;}
-
 	if (!is_touchpad) { return 0;} //Only CX/CXII supported
 	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
-    
+
     // Initialize nGL
     nglInit();
     // Allocate the framebuffer
     TEXTURE *screen = newTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 0, false);
     nglSetBuffer(screen->bitmap);
+
+    printf("Showing loading screen...\n");
+
+    //will this explode i hope not....
     ProcessedPosition *processed = new ProcessedPosition[9999];
     uni.processed = processed;
 
+    //Load game
+    if (uni.load_bundles()) {return 1;}
+
+
+    //DEBUG SHIHH
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
     uni.vessels.emplace_back(new_vess);
@@ -48,7 +61,11 @@ int main()
     uni.celestials.emplace_back(body);
     
 
-    
+    //Load font data
+    if (fonts.init(&uni.resource_bundle) != 0) {
+        printf("Error loading fonts!\n");
+    }
+
     printf("Loading complete!\n");
     
     #ifdef _TINSPIRE
