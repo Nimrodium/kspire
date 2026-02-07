@@ -8,7 +8,17 @@
             "rotation_rate": "1",
             "has_atmosphere": "1",
             "atmosphere_height": "1",
-            "sea_level_pressure": "1"
+            "sea_level_pressure": "1",
+            "Orbit": {
+                "mu": "1",
+                "semi_major_axis": "1",
+                "eccentricity": "1",
+                "inclination": "1",
+                "long_ascending_node": "1",
+                "argument_of_periapsis": "1",
+                "mean_anomaly_at_epoch": "1",
+                "epoch": "1"
+            }
         },
         {
             "name": "Earth",
@@ -18,7 +28,17 @@
             "rotation_rate": "1",
             "has_atmosphere": "1",
             "atmosphere_height": "1",
-            "sea_level_pressure": "1"
+            "sea_level_pressure": "1",
+            "Orbit": {
+                "mu": "1",
+                "semi_major_axis": "1",
+                "eccentricity": "1",
+                "inclination": "1",
+                "long_ascending_node": "1",
+                "argument_of_periapsis": "1",
+                "mean_anomaly_at_epoch": "1",
+                "epoch": "1"
+            }
         },
         {
             "name": "Moon",
@@ -28,7 +48,17 @@
             "rotation_rate": "1",
             "has_atmosphere": "1",
             "atmosphere_height": "1",
-            "sea_level_pressure": "1"
+            "sea_level_pressure": "1",
+            "Orbit": {
+                "mu": "1",
+                "semi_major_axis": "1",
+                "eccentricity": "1",
+                "inclination": "1",
+                "long_ascending_node": "1",
+                "argument_of_periapsis": "1",
+                "mean_anomaly_at_epoch": "1",
+                "epoch": "1"
+            }
         }
 
 

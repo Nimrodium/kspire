@@ -12,6 +12,7 @@ struct Orbit {
     double semi_minor_axis;
     double semi_latus_rectum;
 
+    double semi_major_axis;
     double eccentricity;
     double epoch;
     double period;

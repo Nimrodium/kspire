@@ -2,6 +2,8 @@
 #include "../globals.h"
 #include "orbit.h"
 
+
+
 //Uses system / Proto_body for storing relationships. this stores data.
 class CelestialBody {
     public:
@@ -21,10 +23,10 @@ class CelestialBody {
     bool is_home_body = false;
     Orbit orbit; //rails
 
-
     //Load ANGEL model
     int load_model(Bundle* assets);
 
+    
     int switch_texture(std::string name);
 
     void clear_model();

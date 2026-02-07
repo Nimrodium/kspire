@@ -180,7 +180,7 @@ void Universe::render() {
     
 }
 
-
+//Move this to celestialbody?
 int Universe::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bundle* resources) {
     printf("LOADING BODIES FROM JSON\n");
     std::vector<uint8_t> raw = resources->load_raw_data("resources/system/system.json");
@@ -190,7 +190,7 @@ int Universe::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bund
     d.Parse(json.c_str(),json.size());
 
     if (!d.HasMember("Bodies") || !d["Bodies"].IsArray()) {
-        printf("Missing celestials!\n");
+        printf("E 13418: Missing celestials!\n");
         return 2;
     }
 
@@ -201,18 +201,33 @@ int Universe::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bund
         const rapidjson::Value& body = bodies[i];
         if (!body.IsObject()) continue;
 
+        if (!body.HasMember("Orbit")) {
+            printf("E 13418: Missing orbit!\n");
+            return 3;
+        }
+        //Read Orbit data
+        const rapidjson::Value& orbit = body["Orbit"];
+
         CelestialBody cb;
 
         //Grab values
-        const char* s_name = body["name"].GetString();
-        const char* s_parent = body["parent"].GetString();
-        const char* s_radius = body["radius"].GetString();
-        const char* s_mass = body["mass"].GetString();
-        const char* s_rr = body["rotation_rate"].GetString();
-        const char* s_ha = body["has_atmosphere"].GetString();
-        const char* s_atmh = body["atmosphere_height"].GetString();
-        const char* s_slp = body["sea_level_pressure"].GetString();
-
+        const char* s_name      = body["name"].GetString();
+        const char* s_parent    = body["parent"].GetString();
+        const char* s_radius    = body["radius"].GetString();
+        const char* s_mass      = body["mass"].GetString();
+        const char* s_rr        = body["rotation_rate"].GetString();
+        const char* s_ha        = body["has_atmosphere"].GetString();
+        const char* s_atmh      = body["atmosphere_height"].GetString();
+        const char* s_slp       = body["sea_level_pressure"].GetString();
+        const char* s_mu        = orbit["mu"].GetString();
+        const char* s_sma       = orbit["semi_major_axis"].GetString();
+        const char* s_ecc       = orbit["eccentricity"].GetString();
+        const char* s_inc       = orbit["inclination"].GetString();
+        const char* s_lan       = orbit["long_ascending_node"].GetString();
+        const char* s_ap        = orbit["argument_of_periapsis"].GetString();
+        const char* s_ma        = orbit["mean_anomaly_at_epoch"].GetString();
+        const char* s_ep        = orbit["epoch"].GetString();
+        
         //Check
         if (
             s_name   == nullptr ||
@@ -223,7 +238,17 @@ int Universe::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bund
             s_ha     == nullptr ||
             s_atmh   == nullptr ||
             s_slp    == nullptr
-        ) { printf("Error parsing object!\n"); return 1; }
+        ) { printf("E 15123: Error parsing object!\n"); return 1; }
+        if (
+            s_mu     == nullptr ||
+            s_sma    == nullptr ||
+            s_ecc    == nullptr ||
+            s_inc    == nullptr ||
+            s_lan    == nullptr ||
+            s_ap     == nullptr ||
+            s_ma     == nullptr ||
+            s_ep     == nullptr
+        ) { printf("E 15123: Error parsing orbit!\n"); return 1; }
 
         if (sizeof(s_name) < 64)
             cb.name = std::string(s_name);
@@ -241,6 +266,22 @@ int Universe::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bund
             cb.atmosphere_height = std::stoi(s_atmh);
         if (sizeof(s_slp) < 64)
             cb.sea_level_pressure = std::stof(s_slp);
+        if (sizeof(s_mu) < 64)
+            cb.orbit.mu = std::stod(s_mu);
+        if (sizeof(s_sma) < 64)
+            cb.orbit.semi_major_axis = std::stod(s_sma);
+        if (sizeof(s_ecc) < 64)
+            cb.orbit.eccentricity = std::stod(s_ecc);
+        if (sizeof(s_inc) < 64)
+            cb.orbit.inclination = std::stod(s_inc);
+        if (sizeof(s_lan) < 64)
+            cb.orbit.long_ascending_node = std::stod(s_lan);
+        if (sizeof(s_ap) < 64)
+            cb.orbit.argument_of_periapsis = std::stod(s_ap);
+        if (sizeof(s_ma) < 64)
+            cb.orbit.mean_anomaly = std::stod(s_ma);
+        if (sizeof(s_ep) < 64)
+            cb.orbit.epoch = std::stod(s_ep);
 
         celestials->push_back(cb);
         printf("Added body %s.\n",cb.name.c_str());
