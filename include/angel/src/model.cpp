@@ -32,13 +32,18 @@ namespace angel {
         }
     }
 
-    int ModelGroup::load_texture_into_material(Bundle* asset_bundle,std::string name,anGL_MATERIAL *mat) {
+    //From auto loader might not be needed, still working on it
+
+    int ModelGroup::load_texture_into_material(Bundle* asset_bundle,std::string name,anGL_MATERIAL *mat,bool from_auto_loader) {
         mat->diffuse_texture.data.clear();  //make sure it's empty
 
         //Explode trailing chars
         name.erase(std::find_if(name.rbegin(), name.rend(), [](unsigned char ch) {
             return !std::isspace(ch);
         }).base(), name.end());
+        if (from_auto_loader) {
+            //name = path + name;
+        }
 
         std::vector<uint8_t> data = asset_bundle->load_raw_data(name.c_str());    
 
@@ -91,7 +96,7 @@ namespace angel {
         //Gonna have to add uv prescaling to affix new textures that might differ from the originally loaded textures, do later.
 
         printf("Using texture: %s\n",texture_name.c_str());          
-        int error = load_texture_into_material(asset_bundle,texture_name,get_material_by_name(obj->material));
+        int error = load_texture_into_material(asset_bundle,texture_name,get_material_by_name(obj->material),false);
         if (error) {printf("Error loading texture %s into material.\n",texture_name.c_str());}
         //printf("Applied to %s\n",group_materials.back().name.c_str());
 
@@ -137,6 +142,12 @@ namespace angel {
         std::string usemat_name;
         std::vector<uint8_t> obj = asset_bundle->load_raw_data(obj_name.c_str());
 
+        //Get path, useful later for materials which dont define absolute paths.
+        size_t found = obj_name.find_last_of("/");
+        std::string substr = obj_name.substr(0,found);
+        substr.append("/");
+        path = substr;
+
         //Sanity check
         if (obj.size() == 0)
             {printf("Model::load_model(2) : Object size is zero!\nCheck your file name.\n");
@@ -158,6 +169,9 @@ namespace angel {
 
 
         printf("Parsing model...\n");
+    
+        
+
 
         while (lineidx < obj.size()) {  //Line by line parse the OBJ
 
@@ -178,10 +192,16 @@ namespace angel {
                 //sto mtl filename
                 lineidx += 7;
 
-                //Parse mtl name
+                //Parse mtl name (heyyy please do this better, this sucks!!)
                 while (lineidx < obj.size() && obj[lineidx] != '\n') {
                     mat_name += obj[lineidx++];
                 }
+
+
+                //Add the path 
+                std::string full_path = path + mat_name;
+                mat_name = full_path;
+
                 //Go to NL
                 while (lineidx < obj.size() && obj[lineidx] != '\n') lineidx++;
                 lineidx++;
@@ -191,7 +211,7 @@ namespace angel {
             //Newmtl
             if (lineidx + 3 < obj.size() &&
                 obj[lineidx] == 'n' && obj[lineidx+1] == 'e' && obj[lineidx+2] == 'w' && obj[lineidx+3] == 'm') {
-                printf("/Newmtl in OBJ not supported!\n");
+                printf("Newmtl in OBJ not supported!\n");
 
     //            lineidx += 7;
 
@@ -404,7 +424,7 @@ namespace angel {
 
 
         printf("Model loading complete! Parsing material...\n");
-
+        printf("name:%s\n",mat_name.c_str());
         //Load material
         std::vector<uint8_t> mat = asset_bundle->load_raw_data(mat_name.c_str());
         if (mat.size() == 0)
@@ -511,7 +531,11 @@ namespace angel {
                         usemat_name += mat[lineidx++];
                     }      
                     printf("Using texture: %s\n",usemat_name.c_str());          
-                    int error = load_texture_into_material(asset_bundle,usemat_name,&group_materials.back());
+                    
+                    //Combine path obtained in the first steps of load_group, to allow for semi relative pathing in mats.
+                    std::string full_path = path + usemat_name;
+                    int error = load_texture_into_material(asset_bundle,full_path,&group_materials.back(),true);
+
                     if (error) {printf("Error loading texture %s into material.\n",usemat_name.c_str());}
                     printf("Applied to %s\n",group_materials.back().name.c_str());
                 }

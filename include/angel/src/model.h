@@ -53,12 +53,15 @@ namespace angel {
         std::vector<float> u_list;//:   U V
         std::vector<float> v_list;//:   MAP
         std::vector<anGL_MATERIAL> group_materials; //All materials
-        int load_texture_into_material(Bundle* asset_bundle,std::string name,anGL_MATERIAL *mat);
+        int load_texture_into_material(Bundle* asset_bundle,std::string name,anGL_MATERIAL *mat,bool from_auto_loader);
         // Trim from the end (in place)
         inline void rtrim(std::string &s) {
             s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
                 return !std::isspace(ch);
             }).base(), s.end());
         }
+
+        //Path of this obj, used for material files.
+        std::string path;
     };
 }

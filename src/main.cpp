@@ -23,7 +23,7 @@ enum GameStates {
 };
 
 
-
+GameStates current_state = FLIGHT;
 
 Universe uni;
 
@@ -89,7 +89,6 @@ int main()
     uni.resource_bundle = &resource_bundle;
     uni.parts_bundle = &parts_bundle;
 
-
     //DEBUG SHIHH
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
@@ -105,7 +104,6 @@ int main()
     
     printf("Loading complete!\n");
     
-
     
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))
@@ -114,20 +112,25 @@ int main()
     #endif
     {
         //Contains physics and render code for the flight scene
-        uni.step(); 
-
-
-        fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
-
-        std::string warp_string = "WARP ";
-        warp_string.append(std::to_string(uni.phys_warp_rate));
-        fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
-
-
-        std::string time_string = "GameTime ";
-        time_string.append(std::to_string(uni.universal_time));
-        fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
-
+        //Uni contains the main code of handling the flight scene. this is probably
+        //Shitty but ill figure out how to do VAB stuff later. okay!
+        
+        if (current_state == GameStates::FLIGHT) {
+            uni.step(); 
+            
+            
+            fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
+            
+            std::string warp_string = "WARP ";
+            warp_string.append(std::to_string(uni.phys_warp_rate));
+            fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
+            
+            
+            std::string time_string = "GameTime ";
+            time_string.append(std::to_string(uni.universal_time));
+            fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
+            
+        }
         nglDisplay();
     }
 

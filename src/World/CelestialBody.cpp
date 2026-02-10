@@ -12,7 +12,6 @@ int CelestialBody::load_model(Bundle* assets) {
 }
 
 int CelestialBody::switch_texture(std::string name) {
-    printf("CelestialBody::switch_texture CURRENTLY BROKEN\n");
     return group.swap_texture(my_assets,"Sphere",name);
 }
 

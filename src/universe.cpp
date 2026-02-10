@@ -108,7 +108,7 @@ void Universe::step() {
 
     //Debug to swap texture of planet
     if(isKeyPressed(KEY_NSPIRE_ENTER)) {
-        if (celestials[0].switch_texture("luna.png") != 0) {
+        if (celestials[0].switch_texture("body/luna.png") != 0) {
             printf("ERROR\n");
         }
     }
