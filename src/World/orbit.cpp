@@ -5,6 +5,7 @@ void Orbit::sim() {
     if (mu == 0) {
         printf("Mu undefined!\n");
     }
+    
 }
 
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html

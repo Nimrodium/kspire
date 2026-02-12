@@ -4,7 +4,7 @@
 #include "flight.h"
 #include "World/CelestialBody.h"
 #include "World/Camera/camera.h"
-
+#include "Utility/timewarp_controller.h"
 //Contains all vessels.
 class Universe {
     public:
@@ -13,11 +13,12 @@ class Universe {
     DT clock;
     double universal_time = 0;
 
+    Timewarp_Controller timewarp;
+    
     //Physics range things
     Flight flight;
     Camera cam;
-    float phys_warp_rate = 1;
-    float rails_warp_rate = 1;
+    
     
     Vessel* focused_vessel;
 
@@ -41,7 +42,7 @@ class Universe {
     void render_nearby_vessels();
 
     //Step on rails orbit sim
-    void step_on_rails_orbits(Vessel* v);
+    void step_rails_orbit_for_v(Vessel* v);
     //Step physics orbits
     void step_physics_orbit_for_v(Vessel* v);
 

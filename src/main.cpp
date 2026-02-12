@@ -138,9 +138,9 @@ int main()
             // fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
 
 
-            // std::string time_string = "GameTime ";
-            // time_string.append(std::to_string(uni.universal_time));
-            // fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
+            std::string time_string = "Warp: x";
+            time_string.append(std::to_string((int)(uni.timewarp.warp_rate + 0.5f)));
+            fonts.drawString(time_string.c_str(),0xFFFF,*screen,200,220);
 
             // std::string alt_string = "ALT ";
             // alt_string.append(std::to_string((int)(uni.focused_vessel->protoVessel.altitude / 1000)));

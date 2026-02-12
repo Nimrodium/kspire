@@ -78,22 +78,44 @@ void Universe::render_nearby_vessels() {
         }
     }
 }
-void Universe::step_on_rails_orbits(Vessel* v) {
+void Universe::step_rails_orbit_for_v(Vessel* v) {
     if ( v == nullptr) return;  //Compiler chloroform
     //When you do this: dont forget to apply the phys warp rate to on rails, 
     //when in phys warp.
 }
 void Universe::step_physics_orbit_for_v(Vessel* v) {
-    v->physics.step(clock.dt,phys_warp_rate);
-    v->orbit.mu = 3.986004418e14;
-    v->orbit.physics_to_rails(v->physics.POS,v->physics.VEL,universal_time);
-}
+    if ( v == nullptr) return;
+    v->physics.step(clock.dt,timewarp.warp_rate);
+    v->orbit.mu = 3.986004418e14;   //NEED TO GET FOR HOME BODY
 
+}
 
 
 void Universe::step() {
     clock.tick();
     cam.camera_controller(Camera::FREE);
+
+    timewarp.tick(0);
+    timewarp.lerp_rate(clock.dt);
+
+    //Rails enter/exit handling
+
+    if (timewarp.entered_rails) {
+        for (Vessel &v : vessels) {
+            if (v.loaded) {
+                v.orbit.physics_to_rails(v.physics.POS,v.physics.VEL,universal_time);
+            }
+        }
+    }
+    if (timewarp.exited_rails) {
+        for (Vessel &v : vessels) {
+            if (v.loaded) {
+
+                //Need to do rails to physics
+            }
+        }
+
+    }
 
     //Update focused vessel, in case # of vessels changes. Avoids std::vector fuckery messing with the pointer i think?
     //Is this necessary? if so, i should recalc this ONLY if the vessels.size() changes.
@@ -105,15 +127,6 @@ void Universe::step() {
     }
 
 
-
-    //Timewarp keys, move this to a TimewarpController
-    if (isKeyPressed(KEY_NSPIRE_Z)) {
-        phys_warp_rate *= 2;
-    }
-    if (isKeyPressed(KEY_NSPIRE_X)) {
-        phys_warp_rate = 1; if (phys_warp_rate <= 1) phys_warp_rate = 1;
-    }
-
     //Debug to swap texture of planet
     if(isKeyPressed(KEY_NSPIRE_ENTER)) {
         if (celestials[0].switch_texture("body/mars.png") != 0) {
@@ -123,12 +136,12 @@ void Universe::step() {
 
     //Step vessel orbits
     for (Vessel& v : vessels) {
-        //Step vessel orbit after checking if its on rails or simulated
-        if (v.loaded) {
+        //Step vessel orbit after checking if its on rails or simulated AND LOADED
+        if (v.loaded && timewarp.is_physics_warp) {
             step_physics_orbit_for_v(&v);
             
         } else {
-            step_on_rails_orbits(&v);
+            step_rails_orbit_for_v(&v);
         }
     }
 
@@ -136,7 +149,7 @@ void Universe::step() {
 
     //Deltatime stuff
     cam.dt = clock.dt;
-    universal_time += (clock.dt * phys_warp_rate) * rails_warp_rate;
+    universal_time += (clock.dt * timewarp.warp_rate);
 
     //Render
     render();
