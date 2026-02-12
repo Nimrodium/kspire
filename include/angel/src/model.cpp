@@ -79,6 +79,7 @@ namespace angel {
                 mat->diffuse_texture.texture.bitmap = mat->diffuse_texture.data.data();
                 mat->diffuse_texture.texture.width  = width;
                 mat->diffuse_texture.texture.height = height;
+                printf("sizetex is %d\n",mat->diffuse_texture.data.size());
             }
             
 

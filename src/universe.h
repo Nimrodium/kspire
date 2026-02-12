@@ -43,7 +43,7 @@ class Universe {
     //Step on rails orbit sim
     void step_on_rails_orbits(Vessel* v);
     //Step physics orbits
-    void step_physics_orbits(Vessel* v);
+    void step_physics_orbit_for_v(Vessel* v);
 
     void render();
 

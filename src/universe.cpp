@@ -36,10 +36,8 @@ void Universe::render_celestials() {
                 float v_y = focused_vessel->physics.POS.y - c.POS.y;
                 float v_z = focused_vessel->physics.POS.z - c.POS.z;
                 
-                float len = sqrtf(v_x*v_x +
-                v_y*v_y +
-                v_z*v_z);
-
+                float len = linalg::length(focused_vessel->physics.POS - c.POS);
+                 
                 //3000 meter bubble
                 float fixed_bubble = 3000;
                 glTranslatef(
@@ -47,7 +45,6 @@ void Universe::render_celestials() {
                     -(v_y  / len)* fixed_bubble        * 1,
                     -(v_z   / len)* fixed_bubble       * 1
                 );
-
 
                 float angular_diameter = 2.0f * (c.radius / len);
                 float render_radius = angular_diameter * fixed_bubble;
@@ -86,8 +83,10 @@ void Universe::step_on_rails_orbits(Vessel* v) {
     //When you do this: dont forget to apply the phys warp rate to on rails, 
     //when in phys warp.
 }
-void Universe::step_physics_orbits(Vessel* v) {
+void Universe::step_physics_orbit_for_v(Vessel* v) {
     v->physics.step(clock.dt,phys_warp_rate);
+    v->orbit.mu = 3.986004418e14;
+    v->orbit.physics_to_rails(v->physics.POS,v->physics.VEL,universal_time);
 }
 
 
@@ -126,7 +125,7 @@ void Universe::step() {
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated
         if (v.loaded) {
-            step_physics_orbits(&v);
+            step_physics_orbit_for_v(&v);
             
         } else {
             step_on_rails_orbits(&v);
@@ -164,19 +163,10 @@ void Universe::render() {
         nglRotateY(out.y);
         nglRotateZ(out.z);
     }
-    //IN PLANETS
-
-    //Try psuh pop matrix inside.....
-    //maybe thattl fix ur shit
 
     render_celestials();
-    //OUT PLANETS
-
-    //IN VESSELS
-
 
     render_nearby_vessels();
-    //OUT VESSELS
 
     //OUT CAM
     glPopMatrix();

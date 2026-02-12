@@ -8,7 +8,7 @@ template <typename T> T clamp(T in, T min, T max) {
     if (in < min) { return min; }
     if (in > max) { return max; }
     return in;
-} 
+}
 
 inline float clamp(float x, float min, float max) {
     if (x < min) {return min;}
@@ -23,6 +23,7 @@ enum GameStates {
 };
 
 
+
 GameStates current_state = FLIGHT;
 
 Universe uni;
@@ -31,12 +32,22 @@ Fonts fonts;
 
 //Angel Asset bundles
 Bundle resource_bundle; //RESOURCE
-Bundle planet_bundle;   //BODY  
+Bundle planet_bundle;   //BODY
 Bundle parts_bundle;    //PARTS
+
+template <typename T> void debug_print(std::string preamble, T value, int x, int y, TEXTURE *screen, std::string unit = "") {
+    preamble.append(std::to_string(value));
+    preamble.append(unit);
+    fonts.drawString(preamble.c_str(), 0xFFFF, *screen, x, y);
+}
+
+template <typename T> void debug_print(T value, int x, int y, TEXTURE *screen) {
+    std::string preamble = std::to_string(value);
+    fonts.drawString(preamble.c_str(), 0xFFFF, *screen, x, y);
+}
 
 int main()
 {
-
 	if (!is_touchpad) { return 0;} //Only CX/CXII supported
 	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
 
@@ -64,7 +75,7 @@ int main()
     nglDisplay();
 
     if (uni.load_celestial_bodies(&uni.celestials,&resource_bundle)) return 1;
-    
+
 
     //will this explode i hope not....
     ProcessedPosition *processed = new ProcessedPosition[9999];
@@ -98,14 +109,14 @@ int main()
 
     uni.celestials[2].load_model(uni.planet_bundle);
     uni.celestials[2].POS.z -= 10000000;
-    
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fonts.drawString("Loading complete!",0xFFFF,*screen,10,220);
     nglDisplay();
-    
+
     printf("Loading complete!\n");
-    
-    
+
+
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))
     #else
@@ -115,33 +126,42 @@ int main()
         //Contains physics and render code for the flight scene
         //Uni contains the main code of handling the flight scene. this is probably
         //Shitty but ill figure out how to do VAB stuff later. okay!
-        
+
         if (current_state == GameStates::FLIGHT) {
-            uni.step(); 
-            
-            
+            uni.step();
+
+
             fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
-            
-            std::string warp_string = "WARP ";
-            warp_string.append(std::to_string(uni.phys_warp_rate));
-            fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
-            
-            
-            std::string time_string = "GameTime ";
-            time_string.append(std::to_string(uni.universal_time));
-            fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
-            
-            std::string alt_string = "ALT ";
-            alt_string.append(std::to_string((int)(uni.focused_vessel->protoVessel.altitude / 1000)));
-            alt_string.append("km");
-            fonts.drawString(alt_string.c_str(),0xFFFF,*screen,10,100);
+
+            // std::string warp_string = "WARP ";
+            // warp_string.append(std::to_string(uni.phys_warp_rate));
+            // fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
+
+
+            // std::string time_string = "GameTime ";
+            // time_string.append(std::to_string(uni.universal_time));
+            // fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
+
+            // std::string alt_string = "ALT ";
+            // alt_string.append(std::to_string((int)(uni.focused_vessel->protoVessel.altitude / 1000)));
+            // alt_string.append("km");
+            // fonts.drawString(alt_string.c_str(),0xFFFF,*screen,10,100);
+
+            debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
+            debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);
+            debug_print("PRD ",uni.focused_vessel->orbit.period,10,50,screen);
+            debug_print("SPD ",uni.focused_vessel->orbit.orbital_speed,10,70,screen);
+            debug_print("INC ",uni.focused_vessel->orbit.inclination,10,90,screen);
+            debug_print("M-A ",uni.focused_vessel->orbit.mean_anomaly,10,110,screen);
+            debug_print("LAN ",uni.focused_vessel->orbit.long_ascending_node,10,130,screen);
+            debug_print("EPC ",uni.focused_vessel->orbit.epoch,10,150,screen);
 
         }
         nglDisplay();
     }
 
     /*
-        
+
 
 
         //CAPSULE
@@ -178,13 +198,13 @@ int main()
     }
 
 
-    
+
     */
     delete[] processed;
     // Deinitialize nGL
     nglUninit();
     deleteTexture(screen);
-    
+
 
 
     resource_bundle.free();

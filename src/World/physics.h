@@ -1,8 +1,7 @@
 #pragma once
 #include "../../include/linalg.h"
 
-//  Trying new comment style
-//  Satellite motions
+//Physics warp stuff
 
 
 //https://medium.com/intuition/dont-trust-runge-kutta-blindly-be392663fbe4
@@ -26,7 +25,7 @@ public:
     Sun home;
     //  Earth Centered Inertial, Cartesian coordinates pulled from GMAT
     linalg::vec<double,3> POS = {0 * 1000, 0 * 1000, -5000 * 1000};    //  m
-    linalg::vec<double,3> VEL = {7.672 * 1000, 0 * 1000, 0 * 1000};    //  m/s
+    linalg::vec<double,3> VEL = {7.672 * 1000, 3 * 1000, 0 * 1000};    //  m/s
     linalg::vec<double,3> T_ACC = {0,0,0}; //Thruster acceleration
 
 

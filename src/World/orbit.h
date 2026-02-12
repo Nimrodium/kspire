@@ -26,4 +26,10 @@ struct Orbit {
     double mu = 0;  //Propogate mu from parent into here!!
 
     void sim();
+
+    void physics_to_rails(
+        linalg::vec<double,3> POS, 
+        linalg::vec<double,3> VEL,
+        double epoch
+    );
 };
