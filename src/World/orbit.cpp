@@ -97,7 +97,7 @@ void Orbit::physics_to_rails(linalg::vec<double,3> POS, linalg::vec<double,3> VE
     mean_anomaly = E - eccentricity * linalg::sin(E);
 
     //STO MA-E
-    mean_anomaly_at_epoch
+    mean_anomaly_at_epoch = epoch;
 
     //STO LAN
     long_ascending_node = Omega;
