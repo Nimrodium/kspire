@@ -25,10 +25,12 @@ public:
     Earth planet;
     Sun home;
     //  Earth Centered Inertial, Cartesian coordinates pulled from GMAT
-    linalg::vec<float,3> POS = {170099.209 * 1000, -396000.856 * 1000, 45797.431 * 1000};    //  m
-    linalg::vec<float,3> VEL = {-2.08207 * 1000, 2.3215701 * 1000, 2.413379 * 1000};    //  m/s
-    linalg::vec<float,3> T_ACC = {0,0,0}; //Thruster acceleration
+    linalg::vec<double,3> POS = {0 * 1000, 0 * 1000, -5000 * 1000};    //  m
+    linalg::vec<double,3> VEL = {7.672 * 1000, 0 * 1000, 0 * 1000};    //  m/s
+    linalg::vec<double,3> T_ACC = {0,0,0}; //Thruster acceleration
 
+
+    //Useless??? from NOAA simulator
 
     //Sun position in ECI frame
     linalg::vec<float,3> SUN = {146.9 * 1000 * 1000, 0, 0};
@@ -56,5 +58,5 @@ public:
     float solar_panel_directivity(linalg::vec<float,3> local_panel_normal);
 private:
     void leap_frog(float sdl_dt, float phys_warp_rate);
-    linalg::vec<float,3> grav_f();
+    linalg::vec<double,3> grav_f();
 };

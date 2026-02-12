@@ -5,6 +5,7 @@
 
 using namespace rapidjson;
 
+
 void Universe::render_celestials() {
     
     if (focused_vessel == nullptr) { printf("E 218754: Cannot render planets!\n");return;}
@@ -13,6 +14,7 @@ void Universe::render_celestials() {
     //Should i do distance from CAMERA instead??????
 
     for (CelestialBody& c : celestials) {
+        glPushMatrix();
         int mode = 0;
         //Check if vessel is low enough to render in nearby mode
         if (1 == 5) {
@@ -23,44 +25,51 @@ void Universe::render_celestials() {
             //Mode 1 PQS
             printf("Mode 1 not implemented!\n");
         } else {
-            //Mode 0 Distant
-            //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
-
-            //Vessel coordinate in planet space, per planet
-            float v_x = focused_vessel->physics.POS.x + c.POS.x;
-            float v_y = focused_vessel->physics.POS.y + c.POS.y;
-            float v_z = focused_vessel->physics.POS.z + c.POS.z;
-            
-            float len = sqrtf(v_x*v_x +
-            v_y*v_y +
-            v_z*v_z);
-
-            //3000 meter bubble
-            float fixed_bubble = 3000;
-            glTranslatef(
-                -(v_x  / len)* fixed_bubble        * 0,
-                -(v_y  / len)* fixed_bubble        * 0,
-                -(v_z   / len)* fixed_bubble       * 0
-            );
-
-            glTranslatef(
-                0,0,fixed_bubble
-            );
-
-            float angular_radius = c.radius / len;  
-            float render_radius = angular_radius * fixed_bubble;
-            render_radius /= 10;
-            glScale3f(render_radius, render_radius, render_radius);
-            //would do planet pos here
-            
             auto obj = c.me;
-            if (obj == nullptr) continue;
-            
-            glBindTexture(obj->texture);
+            if (obj != nullptr)
+            {
+                //Mode 0 Distant
+                //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
 
-            nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+                //Vessel coordinate in planet space, per planet
+                float v_x = focused_vessel->physics.POS.x - c.POS.x;
+                float v_y = focused_vessel->physics.POS.y - c.POS.y;
+                float v_z = focused_vessel->physics.POS.z - c.POS.z;
+                
+                float len = sqrtf(v_x*v_x +
+                v_y*v_y +
+                v_z*v_z);
 
+                //3000 meter bubble
+                float fixed_bubble = 3000;
+                glTranslatef(
+                    -(v_x  / len)* fixed_bubble        * 1,
+                    -(v_y  / len)* fixed_bubble        * 1,
+                    -(v_z   / len)* fixed_bubble       * 1
+                );
+
+
+                float angular_diameter = 2.0f * (c.radius / len);
+                float render_radius = angular_diameter * fixed_bubble;
+                render_radius /=5;
+
+                glScale3f(render_radius, render_radius, render_radius);
+                glBindTexture(obj->texture);
+                nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+                
+                //reformat
+                if (focused_vessel != nullptr) {
+                    if (c.name == "Earth") {
+                        focused_vessel->protoVessel.altitude = len;
+                        
+                    }
+                    
+                }
+
+
+            }
         }
+        glPopMatrix();
     }
 }
 void Universe::render_nearby_vessels() {
@@ -108,7 +117,7 @@ void Universe::step() {
 
     //Debug to swap texture of planet
     if(isKeyPressed(KEY_NSPIRE_ENTER)) {
-        if (celestials[0].switch_texture("body/luna.png") != 0) {
+        if (celestials[0].switch_texture("body/mars.png") != 0) {
             printf("ERROR\n");
         }
     }
@@ -156,18 +165,19 @@ void Universe::render() {
         nglRotateZ(out.z);
     }
     //IN PLANETS
-    glPushMatrix();
-    
+
+    //Try psuh pop matrix inside.....
+    //maybe thattl fix ur shit
 
     render_celestials();
     //OUT PLANETS
-    glPopMatrix();
+
     //IN VESSELS
-    glPushMatrix();
+
 
     render_nearby_vessels();
     //OUT VESSELS
-    glPopMatrix();
+
     //OUT CAM
     glPopMatrix();
     

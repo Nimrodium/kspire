@@ -93,11 +93,12 @@ int main()
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
     uni.vessels.emplace_back(new_vess);
-    uni.celestials[0].load_model(uni.planet_bundle);
+    uni.celestials[1].load_model(uni.planet_bundle);
+    uni.focused_vessel = &new_vess;
 
-    //uni.celestials[1].load_model(uni.planet_bundle);
-    //uni.celestials[1].POS.y += 40000000;
-
+    uni.celestials[2].load_model(uni.planet_bundle);
+    uni.celestials[2].POS.z -= 10000000;
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fonts.drawString("Loading complete!",0xFFFF,*screen,10,220);
     nglDisplay();
@@ -130,6 +131,11 @@ int main()
             time_string.append(std::to_string(uni.universal_time));
             fonts.drawString(time_string.c_str(),0xFFFF,*screen,10,50);
             
+            std::string alt_string = "ALT ";
+            alt_string.append(std::to_string((int)(uni.focused_vessel->protoVessel.altitude / 1000)));
+            alt_string.append("km");
+            fonts.drawString(alt_string.c_str(),0xFFFF,*screen,10,100);
+
         }
         nglDisplay();
     }
