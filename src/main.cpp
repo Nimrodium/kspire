@@ -74,7 +74,7 @@ int main()
     fonts.drawString("Loading planets...",0xFFFF,*screen,10,220);
     nglDisplay();
 
-    if (uni.planetarium.load_celestial_bodies(&uni.planetarium.celestials,&resource_bundle)) return 1;
+    if (uni.planetarium.load_celestial_bodies(&resource_bundle)) return 1;
 
 
     //will this explode i hope not....

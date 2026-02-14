@@ -6,7 +6,7 @@
 using namespace rapidjson;
 
 void Planetarium::render_celestials() {
-    
+
     if (focused_vessel == nullptr) { printf("E 218754: Cannot render planets!\n");return;}
     if (celestials.size() == 0) { printf("E 128585: Cannot render planets!\n");return;}
 
@@ -31,21 +31,26 @@ void Planetarium::render_celestials() {
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
 
                 //Vessel coordinate in planet space, per planet
-                float v_x = focused_vessel->orbit.POS.x - c.orbit.POS.x;
-                float v_y = focused_vessel->orbit.POS.y - c.orbit.POS.y;
-                float v_z = focused_vessel->orbit.POS.z - c.orbit.POS.z;
-                
+                float v_x = 0 - c.orbit.POS.x;
+                float v_y = 500000000 - c.orbit.POS.y;
+                float v_z = 0 - c.orbit.POS.z;
+
                 //MODIFY THIS TO WORK WITH THE GLOBAL POSITION OF WHATEVER BODY WE ARE ON.
                 float len = linalg::length(c.orbit.POS);
-                 
+
                 //3000 meter bubble
                 float fixed_bubble = 3000;
+                // glTranslatef(
+                //     -(v_x  / len)* fixed_bubble        * 1,
+                //     -(v_y  / len)* fixed_bubble        * 1,
+                //     -(v_z   / len)* fixed_bubble       * 1
+                // );
                 glTranslatef(
                     -(v_x  / len)* fixed_bubble        * 1,
                     -(v_y  / len)* fixed_bubble        * 1,
                     -(v_z   / len)* fixed_bubble       * 1
                 );
-
+                
                 float angular_diameter = 2.0f * (c.radius / len);
                 float render_radius = angular_diameter * fixed_bubble;
                 render_radius /=5;
@@ -53,14 +58,14 @@ void Planetarium::render_celestials() {
                 glScale3f(render_radius, render_radius, render_radius);
                 glBindTexture(obj->texture);
                 nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
-                
+
                 //reformat
                 if (focused_vessel != nullptr) {
                     if (c.name == "Earth") {
                         focused_vessel->protoVessel.altitude = len;
-                        
+
                     }
-                    
+
                 }
 
 
@@ -102,7 +107,7 @@ double Planetarium::get_soi(int index) {
         return me->_SOI;
 
     parent = &celestials[find_body_by_name(me->parent)];
-    
+
     //Solve
     //rSOI = a(m/M)^(2/5)
     double sma = me->orbit.semi_major_axis;
@@ -138,7 +143,7 @@ int Planetarium::get_attractor(Vessel *v) {
 }
 
 void Planetarium::update_planet_positions(double universal_time) {
-    for (CelestialBody &c : celestials) { 
+    for (CelestialBody &c : celestials) {
         if (c.parent != "") {
             c.orbit.calculate_state_from_keplers(universal_time);
         }
@@ -146,8 +151,8 @@ void Planetarium::update_planet_positions(double universal_time) {
 }
 
 
-//Move this to celestialbody?
-int Planetarium::load_celestial_bodies(std::vector<CelestialBody> *celestials, Bundle* resources) {
+
+int Planetarium::load_celestial_bodies(Bundle* resources) {
     printf("LOADING BODIES FROM JSON\n");
     std::vector<uint8_t> raw = resources->load_raw_data("resources/system/system.json");
     std::string json(raw.begin(),raw.end());
@@ -193,7 +198,7 @@ int Planetarium::load_celestial_bodies(std::vector<CelestialBody> *celestials, B
         const char* s_ap        = orbit["argument_of_periapsis"].GetString();
         const char* s_ma        = orbit["mean_anomaly_at_epoch"].GetString();
         const char* s_ep        = orbit["epoch"].GetString();
-        
+
         //Check
         if (
             s_name   == nullptr ||
@@ -216,12 +221,12 @@ int Planetarium::load_celestial_bodies(std::vector<CelestialBody> *celestials, B
             s_ep     == nullptr
         ) { printf("E 15123: Error parsing orbit!\n"); return 1; }
 
-        
+
 
         //If these values cant parse ittl just crash the app which, ig whatever
         //better than the entire calc...... ^ [Like putting a "+" for a double]
         //Do i even bother? I woulda just had it close the whole app either way
-        
+
         if (std::strlen(s_name) < 64)
             cb.name = std::string(s_name);
         if (std::strlen(s_parent) < 64)
@@ -254,13 +259,23 @@ int Planetarium::load_celestial_bodies(std::vector<CelestialBody> *celestials, B
             cb.orbit.mean_anomaly = std::stod(s_ma);
         if (std::strlen(s_ep) < 64)
             cb.orbit.epoch = std::stod(s_ep);
-        
+
         cb.orbit.POS = {0,0,0};
         cb.orbit.VEL = {0,0,0};
-        
-        celestials->push_back(cb);
+
+        celestials.push_back(cb);
         printf("Added body %s.\n",cb.name.c_str());
 
+    }
+
+    //Set mu of each body
+    for (CelestialBody &c : celestials) {
+        if (c.parent == "") continue;
+
+        CelestialBody *parent = &celestials[find_body_by_name(c.parent)];
+        double calc_mu = c.mass + parent->mass;
+        calc_mu *= 6.6743E-11;
+        c.orbit.mu = calc_mu;
     }
 
     return 0;
