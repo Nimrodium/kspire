@@ -15,30 +15,32 @@ double Orbit::solveEccentricAnomaly(double M, double ecc, double maxError = 1E-0
     return guess;
 }
 
+double Orbit::solveEccentricAnomalyHyp(double M, double ecc, double maxError = 1E-07)
+{
+		double adjust = 1.0;
+		double guess = linalg::log(2.0 * M / ecc + 1.8);
+		while (linalg::abs(adjust) > maxError)
+		{
+			adjust = (eccentricity * linalg::sinh(guess) - guess - M) / (eccentricity * linalg::cosh(guess) - 1.0);
+			guess -= adjust;
+		}
+		return guess;
+}        
+
 void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     universal_time = _UNIVERSAL_TIME;
 
     if (mu == 0) {printf("Mu undefined!\n"); return;}
 
-   
-    //Deal with later
-    //double a = semi_major_axis;
-    //double n = sqrt(mu / pow(linalg::abs(a), 3));   //Mean Motion
-    //double Mo = mean_anomaly_at_epoch + n * (universal_time - epoch);
-    //Mo = fmod(Mo, 2.0 * pi);
-    //if (Mo < 0) Mo += 2.0 * pi;
-
-    //Get ObT
-    double period = 2.0 * pi * sqrt(pow(semi_major_axis, 3) / mu);
-    double orbitFraction = mean_anomaly_at_epoch / (2.0 * pi);
-    double ObT = orbitFraction * period;
+    //Time along orbit after Epoch
+    double ObT = universal_time - epoch;
 
     double radius;
     double eccentric_anomaly;
     double true_anomaly;
-    //Calc MA, Ecc A TA, and Radius.
-    if (eccentricity < 1.0) { 
-        //SOLVE ELLIPTICAL
+    //Calc MA, Ecc-A TA, and Radius.
+    if (eccentricity < 1.0) { //SOLVE ELLIPTICAL / CIRCULAR
+        
         if (eccentricity < 1E-05) { printf("ECC edge case\n");}
         //Calc MA
         mean_anomaly = ObT / period * 2.0 * pi;
@@ -50,10 +52,10 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
             if (eccentricity < 0.9) {
                 eccentric_anomaly = solveEccentricAnomaly(mean_anomaly,eccentricity);
             } else {
-                printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE! Orbit.cs::330\n");
+                printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE WITH OTHER FUNC\n");
             }
-            //Calc TA
-            true_anomaly = linalg::acos(
+                //Calc TA
+                true_anomaly = linalg::acos(
                 (linalg::cos(eccentric_anomaly) - eccentricity)
                 /(1.0 - eccentricity * linalg::cos(eccentric_anomaly))
             );
@@ -64,14 +66,62 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         radius = semi_major_axis * (1.0 - eccentricity * eccentricity)
         / (1.0 + eccentricity * linalg::cos(true_anomaly));
 
-    } else if (eccentricity > 1.0) {
-        if (eccentricity == 1.0)
+    } else if (eccentricity > 1.0) { //SOLVE HYPERBOLIC
+        if (eccentricity == 1.0)    //Turn parabolic orbit edge case into hyperbolic
             eccentricity += 1E-10;
-        //SOLVE HYPERBOLIC
-        printf("hyperbolic not implemented yet\n");
+        mean_anomaly = 2.0 * pi * linalg::abs(ObT) / period;
+        eccentric_anomaly = solveEccentricAnomalyHyp(mean_anomaly,eccentricity);
+        true_anomaly = linalg::atan2(linalg::sqrt(eccentricity * eccentricity - 1.0) * linalg::sinh(eccentric_anomaly), eccentricity - linalg::cosh(eccentric_anomaly));
+        if (ObT < 2.0) {
+            true_anomaly = pi * 2 - true_anomaly;
+        }
+        radius = (0.0 - semi_major_axis) * (eccentricity * eccentricity - 1.0) / (1.0 + eccentricity * linalg::cos(true_anomaly));
     }  
 
-    printf("CALC TA:%f\n",true_anomaly);
+    //Now convert to perifocal plane
+    //Describes a 2D plane along the plane of the orbit
+    //POS
+    linalg::vec<double, 3> r_pf;
+    r_pf.x = radius * cos(true_anomaly);
+    r_pf.y = radius * sin(true_anomaly);
+    r_pf.z = 0.0;
+
+    //VEL
+
+    double h = sqrt(mu * semi_major_axis * (1 - eccentricity*eccentricity));
+
+    linalg::vec<double, 3> v_pf;
+    v_pf.x = -mu / h * sin(true_anomaly);
+    v_pf.y =  mu / h * (eccentricity + cos(true_anomaly));
+    v_pf.z =  0.0;
+
+
+    //Rotation matrix
+    linalg::mat<double,3,3> RM; 
+
+    //Precompute terms
+    double cos_o = linalg::cos(long_ascending_node);
+    double sin_o = linalg::sin(long_ascending_node);
+    double cos_i = linalg::cos(inclination);
+    double sin_i = linalg::sin(inclination);
+    double cos_w = linalg::cos(argument_of_periapsis);
+    double sin_w = linalg::sin(argument_of_periapsis);
+
+    RM[0][0] = cos_o*cos_w-sin_o*cos_i*sin_w;
+    RM[0][1] = -cos_o*sin_w-sin_o*cos_i*cos_w;
+    RM[0][2] = sin_o*sin_i;
+
+    RM[1][0] = sin_o*cos_w+cos_o*cos_i*sin_w;
+    RM[1][1] = -sin_o*sin_w-cos_o*cos_i*cos_w;
+    RM[1][2] = -cos_o*sin_i;
+
+    RM[2][0] = sin_i*sin_w;
+    RM[2][1] = sin_i*cos_w;
+    RM[2][2] = cos_i;
+    
+    //Matrix multiplication
+    POS = linalg::mul(RM,r_pf);
+    VEL = linalg::mul(RM,v_pf);
 }
 
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html

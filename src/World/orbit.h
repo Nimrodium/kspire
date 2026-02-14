@@ -47,5 +47,5 @@ private:
 
     double solveEccentricAnomaly(double M, double ecc, double maxError);
     //double solveEccentricAnomalyExtremeEcc(double M, double ecc, int iterations = 8);
-    //double solveEccentricAnomalyHyp(double M, double ecc, double maxError = 1E-07);
+    double solveEccentricAnomalyHyp(double M, double ecc, double maxError);
 };
