@@ -1,18 +1,84 @@
 #include "orbit.h"
 
 
-void Orbit::sim() {
-    if (mu == 0) {
-        printf("Mu undefined!\n");
+//Newton-Rhapson equation solver
+double Orbit::solveEccentricAnomaly(double M, double ecc, double maxError = 1E-07)
+{
+    double adjust = 1.0;
+    double guess = M + ecc * linalg::sin(M) + 0.5 * ecc * ecc * linalg::sin(2.0 * M);
+    while (linalg::abs(adjust) > maxError)
+    {
+        double ans = guess - ecc * linalg::sin(guess);
+        adjust = (M - ans) / (1.0 - ecc * linalg::cos(guess));
+        guess += adjust;
     }
-    
+    return guess;
+}
+
+void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
+    universal_time = _UNIVERSAL_TIME;
+
+    if (mu == 0) {printf("Mu undefined!\n"); return;}
+
+   
+    //Deal with later
+    //double a = semi_major_axis;
+    //double n = sqrt(mu / pow(linalg::abs(a), 3));   //Mean Motion
+    //double Mo = mean_anomaly_at_epoch + n * (universal_time - epoch);
+    //Mo = fmod(Mo, 2.0 * pi);
+    //if (Mo < 0) Mo += 2.0 * pi;
+
+    //Get ObT
+    double period = 2.0 * pi * sqrt(pow(semi_major_axis, 3) / mu);
+    double orbitFraction = mean_anomaly_at_epoch / (2.0 * pi);
+    double ObT = orbitFraction * period;
+
+    double radius;
+    double eccentric_anomaly;
+    double true_anomaly;
+    //Calc MA, Ecc A TA, and Radius.
+    if (eccentricity < 1.0) { 
+        //SOLVE ELLIPTICAL
+        if (eccentricity < 1E-05) { printf("ECC edge case\n");}
+        //Calc MA
+        mean_anomaly = ObT / period * 2.0 * pi;
+        //Calc EA
+        if (eccentricity < 1E-05) { //Near-circular orbits
+            eccentric_anomaly = mean_anomaly;
+            true_anomaly = mean_anomaly;
+        } else {    //Noncircular orbits
+            if (eccentricity < 0.9) {
+                eccentric_anomaly = solveEccentricAnomaly(mean_anomaly,eccentricity);
+            } else {
+                printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE! Orbit.cs::330\n");
+            }
+            //Calc TA
+            true_anomaly = linalg::acos(
+                (linalg::cos(eccentric_anomaly) - eccentricity)
+                /(1.0 - eccentricity * linalg::cos(eccentric_anomaly))
+            );
+        }
+        if (ObT > period / 2.0) {
+            true_anomaly = pi * 2 - true_anomaly;
+        }
+        radius = semi_major_axis * (1.0 - eccentricity * eccentricity)
+        / (1.0 + eccentricity * linalg::cos(true_anomaly));
+
+    } else if (eccentricity > 1.0) {
+        if (eccentricity == 1.0)
+            eccentricity += 1E-10;
+        //SOLVE HYPERBOLIC
+        printf("hyperbolic not implemented yet\n");
+    }  
+
+    printf("CALC TA:%f\n",true_anomaly);
 }
 
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 //Calculate on-rails orbital elements given keplarian elements
 void Orbit::physics_to_rails(linalg::vec<double,3> POS, linalg::vec<double,3> VEL,double epoch) {
     //Y is up
-    double pi = 3.14159265;
+
     if (mu == 0 ) { printf("E 134814: MU NOT SET!!!!\n");}
     //Dont use linalg::normalize() to find length.
 

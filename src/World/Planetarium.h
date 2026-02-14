@@ -25,4 +25,6 @@ public:
     double get_soi(int index);
 
     int get_attractor(Vessel *v);
+
+    void update_planet_positions(double universal_time);
 };

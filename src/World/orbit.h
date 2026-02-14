@@ -4,6 +4,8 @@
 
 //On rails orbit things
 struct Orbit {
+
+
     //ON RAILS
     double ApA; //Apopsis Altitude, to surface
     double ApR; //Apopsis Radius, to center
@@ -29,11 +31,21 @@ struct Orbit {
     linalg::vec<double,3> POS;
     linalg::vec<double,3> VEL;
 
-    void sim();
+    //Calculate keplarian elements based on input universal time
+    void calculate_state_from_keplers(double _UNIVERSAL_TIME);
 
     void physics_to_rails(
         linalg::vec<double,3> POS, 
         linalg::vec<double,3> VEL,
         double epoch
     );
+
+private:
+    const double pi = 3.14159265; 
+    double universal_time;
+
+
+    double solveEccentricAnomaly(double M, double ecc, double maxError);
+    //double solveEccentricAnomalyExtremeEcc(double M, double ecc, int iterations = 8);
+    //double solveEccentricAnomalyHyp(double M, double ecc, double maxError = 1E-07);
 };

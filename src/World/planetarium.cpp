@@ -31,11 +31,11 @@ void Planetarium::render_celestials() {
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
 
                 //Vessel coordinate in planet space, per planet
-                float v_x = focused_vessel->physics.POS.x - c.POS.x;
-                float v_y = focused_vessel->physics.POS.y - c.POS.y;
-                float v_z = focused_vessel->physics.POS.z - c.POS.z;
+                float v_x = focused_vessel->physics.POS.x - c.orbit.POS.x;
+                float v_y = focused_vessel->physics.POS.y - c.orbit.POS.y;
+                float v_z = focused_vessel->physics.POS.z - c.orbit.POS.z;
                 
-                float len = linalg::length(focused_vessel->physics.POS - c.POS);
+                float len = linalg::length(focused_vessel->physics.POS - c.orbit.POS);
                  
                 //3000 meter bubble
                 float fixed_bubble = 3000;
@@ -117,13 +117,14 @@ double Planetarium::get_soi(int index) {
 //Find closest attractor to a vessel
 int Planetarium::get_attractor(Vessel *v) {
     int best = 0;
-    int lowest = INFINITY;
+    double lowest = INFINITY;
     int i = 0;
     for (CelestialBody &c : celestials) {
+        printf("THIS IS NOT WORKING YET!! USE C!! %s, %f\n",c.name.c_str(),v->orbit.epoch);
         double soi = get_soi(i);
         //HOW TO FIND THIS???
         double distance_to_planet = 67000;
-        //Golf        
+        //Golf
         double ans = distance_to_planet / soi;
         if (ans < lowest) {
             best = i;
@@ -135,6 +136,11 @@ int Planetarium::get_attractor(Vessel *v) {
     return best;
 }
 
+void Planetarium::update_planet_positions(double universal_time) {
+    for (CelestialBody &c : celestials) { 
+        c.orbit.calculate_state_from_keplers(universal_time);
+    }
+}
 
 
 //Move this to celestialbody?

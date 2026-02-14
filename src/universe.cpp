@@ -10,9 +10,7 @@ void Universe::render_nearby_vessels() {
     }
 }
 void Universe::step_rails_orbit_for_v(Vessel* v) {
-    if ( v == nullptr) return;  //Compiler chloroform
-    //When you do this: dont forget to apply the phys warp rate to on rails, 
-    //when in phys warp.
+    v->orbit.calculate_state_from_keplers(universal_time);
 }
 void Universe::step_physics_orbit_for_v(Vessel* v) {
     if ( v == nullptr) return;
