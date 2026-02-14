@@ -29,22 +29,23 @@ void Planetarium::render_celestials() {
             {
                 //Mode 0 Distant
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
+                
+                //The 1 is temporary
+                auto vp = planet_to_univere(focused_vessel->orbit.POS,1);
+
+                auto pp = planet_to_univere(focused_vessel->orbit.POS,find_body_by_name(c.name));
 
                 //Vessel coordinate in planet space, per planet
-                float v_x = 0-focused_vessel->orbit.POS.x;
-                float v_y = 0-focused_vessel->orbit.POS.y;
-                float v_z = 0-focused_vessel->orbit.POS.z;
+                float v_x = pp.x-vp.x;
+                float v_y = pp.y-vp.y;
+                float v_z = pp.z-vp.z;
 
                 //MODIFY THIS TO WORK WITH THE GLOBAL POSITION OF WHATEVER BODY WE ARE ON.
                 float len = linalg::length(focused_vessel->orbit.POS);
 
                 //3000 meter bubble
                 float fixed_bubble = 3000;
-                // glTranslatef(
-                //     -(v_x  / len)* fixed_bubble        * 1,
-                //     -(v_y  / len)* fixed_bubble        * 1,
-                //     -(v_z   / len)* fixed_bubble       * 1
-                // );
+
                 glTranslatef(
                     -(v_x  / len)* fixed_bubble        * 1,
                     -(v_y  / len)* fixed_bubble        * 1,
@@ -150,6 +151,18 @@ void Planetarium::update_planet_positions(double universal_time) {
     }
 }
 
+linalg::vec<double,3> Planetarium::planet_to_univere(linalg::vec<double,3> local,int home) {
+    linalg::vec<double,3> pos = local;
+    std::string parent = celestials[home].parent;
+
+    pos += celestials[home].orbit.POS;
+    while (parent != "") {
+        CelestialBody *cb = &celestials[find_body_by_name(parent)];
+        pos += cb->orbit.POS;
+        parent = cb->parent;
+    }
+    return pos;
+}
 
 
 int Planetarium::load_celestial_bodies(Bundle* resources) {

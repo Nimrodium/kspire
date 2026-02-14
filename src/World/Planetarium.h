@@ -27,4 +27,7 @@ public:
     int get_attractor(Vessel *v);
 
     void update_planet_positions(double universal_time);
+
+    //Returns a position in the space of any nested body to universal space
+    linalg::vec<double,3> planet_to_univere(linalg::vec<double,3> local, int home);
 };
