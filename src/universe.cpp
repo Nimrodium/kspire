@@ -14,7 +14,7 @@ void Universe::step_rails_orbit_for_v(Vessel* v) {
 }
 void Universe::step_physics_orbit_for_v(Vessel* v) {
     if ( v == nullptr) return;
-    v->physics.step(clock.dt,timewarp.warp_rate);
+    v->orbit.physics_step(clock.dt,timewarp.warp_rate);
     v->orbit.mu = 3.986004418e14;   //NEED TO GET FOR HOME BODY
 
 }
@@ -37,7 +37,7 @@ void Universe::step() {
             if (v.loaded) {
                 
                 
-                v.orbit.physics_to_rails(v.physics.POS,v.physics.VEL,universal_time);
+                v.orbit.physics_to_rails(universal_time);
             }
         }
     }
@@ -51,23 +51,6 @@ void Universe::step() {
             }
         }
 
-    }
-
-    //Every tick that is rails
-    if (!timewarp.is_physics_warp) {
-        for (Vessel &v : vessels) {
-            if (v.loaded) {
-                //v.physics.POS = v.orbit.POS;
-                //v.physics.VEL = v.orbit.VEL;
-            }
-        }   
-    } else {
-        for (Vessel &v : vessels) {
-            if (v.loaded) {
-                v.orbit.POS = v.physics.POS;
-                v.orbit.VEL = v.physics.VEL;
-            }
-        }
     }
 
     //Update focused vessel, in case # of vessels changes. Avoids std::vector fuckery messing with the pointer i think?

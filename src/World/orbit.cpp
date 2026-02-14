@@ -152,7 +152,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
 
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 //Calculate on-rails orbital elements given keplarian elements
-void Orbit::physics_to_rails(linalg::vec<double,3> POS, linalg::vec<double,3> VEL,double epoch) {
+void Orbit::physics_to_rails(double epoch) {
     //Y is up
 
     if (mu == 0 ) { printf("E 134814: MU NOT SET!!!!\n");}
@@ -247,4 +247,47 @@ void Orbit::physics_to_rails(linalg::vec<double,3> POS, linalg::vec<double,3> VE
     argument_of_periapsis = omega;
 
 
+}
+
+
+void Orbit::physics_step(float sdl_dt , float phys_warp_rate) {
+
+    //Run VEL
+    leap_frog(sdl_dt, phys_warp_rate);
+    
+    //Zero acc before stepping next
+    //T_ACC = linalg::vec<double,3> { 0,0,0 };
+}
+
+
+
+//  Calculate gravity force
+linalg::vec<double,3> Orbit::grav_f() {
+    double r2, r3;
+
+    r2 = dot(POS,POS); //distance**
+    r3 = r2 * sqrt(r2);
+    linalg::vec<double,3> pull_home;
+    pull_home = -mu * POS / r3;
+    
+    return pull_home;
+}
+
+//  Step forward
+void Orbit::leap_frog(float sdl_dt, float phys_warp_rate) {
+
+    //Accumulation maybe?
+    for (int phys_step_count = 0; phys_step_count < phys_warp_rate; phys_step_count++) {
+        linalg::vec<double,3> acc_curr;
+        float ddt = (float) sdl_dt;
+
+        //Current time sep acceleration
+        acc_curr = grav_f(); 
+        VEL += (double)0.5 * ddt* acc_curr; //Kick
+        POS += ddt*VEL; //Drift
+        acc_curr = grav_f(); //New Kick
+        //Propagate
+        VEL += (double)0.5 * ddt* acc_curr;
+    }
+    return;
 }

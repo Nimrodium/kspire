@@ -27,18 +27,19 @@ struct Orbit {
     
     double mu = 0;  //transfer mu from parent into here!!
 
-    //Solve keplarian prop to get this
-    linalg::vec<double,3> POS;
-    linalg::vec<double,3> VEL;
+    //TESTING: Set vessel starting point. 
+
+    //EQUI REFERENCE FRAME TO PARENT BODY
+    linalg::vec<double,3> POS = {0 * 1000, 0 * 1000, -15000 * 1000};    //  m
+    linalg::vec<double,3> VEL = {3.672 * 1000, 0 * 1000, 0 * 1000};    //  m/s
 
     //Calculate keplarian elements based on input universal time
     void calculate_state_from_keplers(double _UNIVERSAL_TIME);
 
-    void physics_to_rails(
-        linalg::vec<double,3> POS, 
-        linalg::vec<double,3> VEL,
-        double epoch
-    );
+    //Used for vessels
+    void physics_step(float sdl_dt, float phys_warp_rate);
+
+    void physics_to_rails(double epoch);
 
 private:
     const double pi = 3.14159265; 
@@ -48,5 +49,8 @@ private:
     double solveEccentricAnomaly(double M, double ecc, double maxError);
     //double solveEccentricAnomalyExtremeEcc(double M, double ecc, int iterations = 8);
     double solveEccentricAnomalyHyp(double M, double ecc, double maxError);
+
+    void leap_frog(float sdl_dt, float phys_warp_rate);
+    linalg::vec<double,3> grav_f();
 
 };

@@ -3,13 +3,13 @@
 #include "ProtoVessel.h"
 #include "Part.h"
 #include "../World/orbit.h"
-#include "../World/physics.h"
+
 
 class Vessel {
     public:
 
-    Orbit orbit; //rails
-    Phys physics;    
+    Orbit orbit; //Both rails and phys
+
 
 
     enum Situation {

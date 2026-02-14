@@ -35,13 +35,14 @@ void Planetarium::render_celestials() {
                 float v_y = focused_vessel->orbit.POS.y - c.orbit.POS.y;
                 float v_z = focused_vessel->orbit.POS.z - c.orbit.POS.z;
                 
-                float len = linalg::length(focused_vessel->physics.POS - c.orbit.POS);
+                //MODIFY THIS TO WORK WITH THE GLOBAL POSITION OF WHATEVER BODY WE ARE ON.
+                float len = linalg::length(c.orbit.POS);
                  
                 //3000 meter bubble
                 float fixed_bubble = 3000;
                 glTranslatef(
                     -(v_x  / len)* fixed_bubble        * 1,
-                    -(v_y  / len)* fixed_bubble        * 0,
+                    -(v_y  / len)* fixed_bubble        * 1,
                     -(v_z   / len)* fixed_bubble       * 1
                 );
 
@@ -253,7 +254,10 @@ int Planetarium::load_celestial_bodies(std::vector<CelestialBody> *celestials, B
             cb.orbit.mean_anomaly = std::stod(s_ma);
         if (std::strlen(s_ep) < 64)
             cb.orbit.epoch = std::stod(s_ep);
-
+        
+        cb.orbit.POS = {0,0,0};
+        cb.orbit.VEL = {0,0,0};
+        
         celestials->push_back(cb);
         printf("Added body %s.\n",cb.name.c_str());
 
