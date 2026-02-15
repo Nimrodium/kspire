@@ -87,6 +87,12 @@ void Universe::step() {
     cam.dt = clock.dt;
     universal_time += (clock.dt * timewarp.warp_rate);
 
+    for (CelestialBody& c : planetarium.celestials) { 
+        c.angle = universal_time / 86400.0*2800;
+
+    }
+
+    
     //Render
     render();
 }

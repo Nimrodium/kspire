@@ -15,7 +15,8 @@ class CelestialBody {
     double radius = -1; //Meters
     double mass = -1;    //kg
     float rotation_rate = -1; //Radians
-    
+    float angle;
+
     int atmosphere = -1;
     int atmosphere_height = -1;
     float sea_level_pressure = -1;

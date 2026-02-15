@@ -29,7 +29,7 @@ void Planetarium::render_celestials() {
             {
                 //Mode 0 Distant
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
-                
+
                 //The 1 is temporary
                 auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
 
@@ -48,13 +48,15 @@ void Planetarium::render_celestials() {
                 //3000 meter bubble
                 float fixed_bubble = 3000;
 
-                glTranslatef(
-                    -(v_x  / len)* fixed_bubble        * 1,
-                    -(v_y  / len)* fixed_bubble        * 1,
-                    -(v_z   / len)* fixed_bubble       * 1
-                );
-            
-                
+                // glTranslatef(
+                //     -(v_x  / len)* fixed_bubble        * 1,
+                //     -(v_y  / len)* fixed_bubble        * 1,
+                //     -(v_z   / len)* fixed_bubble       * 1
+                // );
+                glTranslatef(0,0,fixed_bubble);
+
+                nglRotateY(c.angle);
+
                 float angular_diameter = 2.0f * (c.radius / len);
                 float render_radius = angular_diameter * fixed_bubble;
                 render_radius /=5;

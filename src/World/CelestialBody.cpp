@@ -8,6 +8,13 @@ int CelestialBody::load_model(Bundle* assets) {
     //Store ngl pointer
     me = group.get_object("Sphere");
 
+    //Now swap to right texture
+    std::string final = "body/";
+    final.append(name);
+    final.append(".png");
+    printf("SWITCH TO %s\n",final.c_str());
+    switch_texture(final);
+
     return 0;
 }
 

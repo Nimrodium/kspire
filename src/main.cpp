@@ -76,10 +76,10 @@ int scene_load_flight() {
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
     uni.vessels.emplace_back(new_vess);
-    //uni.planetarium.celestials[1].load_model(uni.planet_bundle);
+    uni.planetarium.celestials[1].load_model(uni.planet_bundle);
     uni.focused_vessel = &new_vess;
 
-    //uni.planetarium.celestials[2].load_model(uni.planet_bundle);
+    uni.planetarium.celestials[2].load_model(uni.planet_bundle);
     uni.planetarium.celestials[2].orbit.POS.z;
 
     //uni.planetarium.celestials[0].load_model(uni.planet_bundle);
@@ -147,10 +147,13 @@ int main()
     scene_load_flight();
     //scene_load_vab();
 
-   
-    GameTexture sample_texture;
+    planet_bundle.debug_list_assets();
 
-    sample_texture.init(&resource_bundle,"resources/vab/crate.png",screen);
+   
+    GameTexture ui_altitude;
+
+    ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
+    ui_altitude.tex.transparent_color =  ui_altitude.tex_data.back() - 1;
 
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))
@@ -177,12 +180,13 @@ int main()
         if (current_state == GameStates::FLIGHT) {
             uni.step();
 
-
+            //Altitude
+            ui_altitude.draw(0,0);
+            debug_print("",(int)(uni.universal_time),2,3,screen,"s");
+            debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
            
-            std::string time_string = "Warp: x";
-            time_string.append(std::to_string((int)(uni.timewarp.warp_rate + 0.5f)));
-            fonts.drawString(time_string.c_str(),0xFFFF,*screen,200,220);
-
+            debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+            /*
             debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
             debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);
             debug_print("PRD ",uni.focused_vessel->orbit.period,10,50,screen);
@@ -191,7 +195,7 @@ int main()
             debug_print("M-A ",uni.focused_vessel->orbit.mean_anomaly,10,110,screen);
             debug_print("LAN ",uni.focused_vessel->orbit.long_ascending_node,10,130,screen);
             debug_print("EPC ",uni.focused_vessel->orbit.epoch,10,150,screen);
-
+            */
         }
         if (current_state == GameStates::EDITOR) {
 
@@ -200,7 +204,7 @@ int main()
         }
         fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
             
-        sample_texture.draw(0,0);
+        
         
 
         nglDisplay();
