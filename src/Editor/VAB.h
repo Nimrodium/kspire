@@ -2,7 +2,7 @@
 #include "../globals.h"
 #include "../World/Camera/camera.h"
 #include "../Utility/GameTexture.h"
-
+#include "../Vessel/Part.h"
 
 class VAB {
 public:
@@ -13,6 +13,8 @@ public:
     //Reduce pallete to just side buttons
     bool show_pallete = false;
     bool hide_vab = false;
+
+    std::vector<Part> part_tree;
 
     //Load ANGEL model
     int Start(Bundle* assets, Bundle* parts);
@@ -25,6 +27,8 @@ private:
     DT clock;
     ModelGroup me;
     ModelGroup part_group;
+    ModelGroup node_g;
+    ngl_object* node;
 
     float camera_height = 30;
     float camera_angle = 30;
@@ -35,17 +39,22 @@ private:
     GameTexture side_panel;
     GameTexture page_selector;
     
-    //Which part group is selected on pallete
+    //Stuff for the pallete menus
     int page_index = 0;
     bool page_key_held = false;
     int part_sel_index = 0;
     bool part_sel_key_held = false;
 
-  
+    //Holding part?
+    bool  grabbed_part = false;
+    bool pad_held = false;  //Holding click
+
     void render();
     void editor_controls();
+    void onClick_oneshot();
 
     //Touchpad
     float tp_h;
     float tp_w;
+    touchpad_report_t touchpad;
 };

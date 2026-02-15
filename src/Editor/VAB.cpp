@@ -1,10 +1,9 @@
 #include "VAB.h"
 
-
-
-
 void VAB::destroy_model() {
     me.free_group();
+    part_group.free_group();
+    node_g.free_group();
     full_scene.clear();
 }
 
@@ -31,7 +30,9 @@ int VAB::Start(Bundle* assets, Bundle* parts) {
 
     //Load parts
     if (part_group.load_group(parts,"parts/capsule")) return 1;
-
+    //Node
+    if (node_g.load_group(assets,"resources/vab/node")) return 1;
+    node = node_g.get_object("Sphere");
 
     return 0;
 }
@@ -81,14 +82,25 @@ void VAB::editor_controls() {
     if (!isKeyPressed(KEY_NSPIRE_Z) && !isKeyPressed(KEY_NSPIRE_X)) part_sel_key_held = false; 
 }
 
+//Actions for mouse click, happens once on click
+void VAB::onClick_oneshot() {
+    grabbed_part = !grabbed_part;
+}
+
 void VAB::Update() {
     clock.tick();
+    touchpad_scan(&touchpad);
     editor_controls();
     
     //VAB main code
 
+    //Click oneshot
+    if (touchpad.pressed && !pad_held) {
+        pad_held = true;
+        onClick_oneshot();
+    }
+    if (!touchpad.pressed) pad_held = false; //Release
 
-    
     render();
     cam.dt = clock.dt;
 }
@@ -151,14 +163,22 @@ void VAB::render() {
     //Sample part
     glPushMatrix();
 
-    touchpad_report_t touchpad;
-    touchpad_scan(&touchpad);
+    //Contact: Touched
+    //Pressed: Button pressed
+
     
+    
+    printf("P: %d,Cont:%d Prox: %d\n",  
+        touchpad.pressed,
+        touchpad.contact,
+        touchpad.proximity
+    );
 
     //Default origin
     glTranslatef(0,100,0);
 
     //Touchpad offsets
+    if (grabbed_part) {
     float t_off_x = touchpad.x / tp_w;
     float t_off_y = touchpad.y / tp_h;
     t_off_x -= 0.5f;  t_off_y -= 0.5f;
@@ -170,10 +190,12 @@ void VAB::render() {
     float c_z = t_off_x * mult * rp_x;
     float c_y = t_off_y * mult * linalg::cos(out.x * 0.01745329) + camera_height;
 
+
     //Later: fix this for looking down/up
 
 
     glTranslatef(c_x,c_y,c_z);
+    }
 
     glScale3f(10,10,10);
 
@@ -181,6 +203,13 @@ void VAB::render() {
     ngl_object* obj = part_group.get_object("MK1");
     glBindTexture(obj->texture);
     nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode, !transformed);    
+
+    glTranslatef(0,2.0f,0);
+    glScale3f(0.4f,0.4f,0.4f);
+
+    glBindTexture(node->texture);
+    nglDrawArray(node->vertices, node->count_vertices, node->positions, node->count_positions, processed, 
+        node->draw_mode, !transformed);    
 
 
 
