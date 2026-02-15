@@ -25,17 +25,31 @@ void Camera::camera_controller(Camera::Mode set_mode) {
 
     float rot_speed = 160.0f * dt;
     linalg::vec<float,2> dpad_vector = { 0,0 };
-    if (isKeyPressed(KEY_NSPIRE_W)) {
-        dpad_vector.y -= rot_speed;
-    }
-    if (isKeyPressed(KEY_NSPIRE_S)) {
-        dpad_vector.y += rot_speed;
-    }
-    if (isKeyPressed(KEY_NSPIRE_A)) {
-        dpad_vector.x -= rot_speed;
-    }
-    if (isKeyPressed(KEY_NSPIRE_D)) {
-        dpad_vector.x += rot_speed;
+    
+
+    //Diagonal
+    if (isKeyPressed(KEY_NSPIRE_UPRIGHT)) {
+        dpad_vector = { rot_speed, -rot_speed };
+    } else if (isKeyPressed(KEY_NSPIRE_DOWNLEFT)) {
+        dpad_vector = { -rot_speed, rot_speed };
+    } else if (isKeyPressed(KEY_NSPIRE_RIGHTDOWN)) {
+        dpad_vector = { rot_speed, rot_speed };
+    } else if (isKeyPressed(KEY_NSPIRE_LEFTUP)) {
+        dpad_vector = { -rot_speed, -rot_speed };
+        
+    }   else { //Cardinal
+        if (isKeyPressed(KEY_NSPIRE_W) || isKeyPressed(KEY_NSPIRE_UP)) {
+            dpad_vector.y -= rot_speed;
+        }
+        if (isKeyPressed(KEY_NSPIRE_S) || isKeyPressed(KEY_NSPIRE_DOWN)) {
+            dpad_vector.y += rot_speed;
+        }
+        if (isKeyPressed(KEY_NSPIRE_A) || isKeyPressed(KEY_NSPIRE_LEFT)) {
+            dpad_vector.x -= rot_speed;
+        }
+        if (isKeyPressed(KEY_NSPIRE_D) || isKeyPressed(KEY_NSPIRE_RIGHT)) {
+            dpad_vector.x += rot_speed;
+        }
     }
     //Make it move at a consistent speed
     float dpad_norm = sqrt((dpad_vector.x * dpad_vector.x) + (dpad_vector.y * dpad_vector.y));

@@ -62,15 +62,7 @@ int scene_load_flight() {
     }
     
     if (uni.planetarium.load_celestial_bodies(&resource_bundle)) return 1;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    fonts.drawString("Loading parts...",0xFFFF,*screen,10,220);
-    nglDisplay();
-    
 
-    if (parts_bundle.load_asset_bundle("parts.tar.gz.tns")) {
-        printf("Asset load error!!");
-        return 1;
-    }
 
     //Set pointers to bundles
     uni.planet_bundle = &planet_bundle;
@@ -82,7 +74,7 @@ int scene_load_flight() {
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
     uni.vessels.emplace_back(new_vess);
     uni.focused_vessel = &new_vess;
-    
+    uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
     
     uni.planetarium.celestials[0].load_model(uni.planet_bundle);
     uni.planetarium.celestials[2].load_model(uni.planet_bundle);
@@ -106,7 +98,7 @@ int scene_load_vab() {
     fonts.drawString("Loading VAB...",0xFFFF,*screen,10,220);
     nglDisplay();
     printf("Loading VAB...\n");
-    vab.load_model(&resource_bundle);
+    vab.Start(&resource_bundle,&parts_bundle);
     loading = false;
     return 0;
 }
@@ -139,6 +131,7 @@ int main()
     processed = new ProcessedPosition[9999];
     uni.processed = processed;
     uni.planetarium.processed = processed;
+    vab.processed = processed;
 
     //Global bundle
     if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
@@ -151,7 +144,18 @@ int main()
         printf("Error loading fonts!\n");
     }
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    fonts.drawString("Loading parts...",0xFFFF,*screen,10,220);
+    nglDisplay();
+    
 
+    if (parts_bundle.load_asset_bundle("parts.tar.gz.tns")) {
+        printf("Asset load error!!");
+        return 1;
+    }
+
+
+    //vab.hide_vab = true;
     //Debug init scene
     //scene_load_flight();
     scene_load_vab();
@@ -202,7 +206,7 @@ int main()
 
         
         if (current_state == GameStates::FLIGHT) {
-            uni.step();
+            uni.Update();
 
             //Altitude
             ui_altitude.draw(0,0);
@@ -223,7 +227,7 @@ int main()
         }
         if (current_state == GameStates::EDITOR) {
 
-            vab.render(processed);
+            vab.Update();
     
         }
         fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);

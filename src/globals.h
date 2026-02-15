@@ -4,6 +4,8 @@
 #include <SDL/SDL.h>
 #include <os.h>
 #include "../include/linalg.h"
+#include <memory>
+
 
 using namespace::angel;
 

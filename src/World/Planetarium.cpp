@@ -61,7 +61,9 @@ void Planetarium::render_celestials() {
                 float angular_diameter = 2.0f * (c.radius / len);
                 float render_radius = angular_diameter * fixed_bubble;
                 render_radius /=5;
-
+                
+                printf("ANGD %f\n",angular_diameter);
+                
                 glScale3f(render_radius, render_radius, render_radius);
                 glBindTexture(obj->texture);
                 nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);

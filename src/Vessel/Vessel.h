@@ -37,6 +37,8 @@ class Vessel {
     //Is this the current controller?    
     bool is_focused = false;
 
+    //Might this have to be unique ptr???
+    //WARNINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
     std::vector<Part> part_tree;
 
     private:

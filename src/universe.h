@@ -36,7 +36,7 @@ class Universe {
     
     Planetarium planetarium;
 
-    void step();
+    void Update();
     
     //Render focused vessel & any surrounding vessels
     void render_nearby_vessels();

@@ -20,7 +20,7 @@ void Universe::step_physics_orbit_for_v(Vessel* v) {
 }
 
 
-void Universe::step() {
+void Universe::Update() {
     clock.tick();
     cam.camera_controller(Camera::FREE);
 
