@@ -6,6 +6,19 @@ void GameTexture::draw(int x, int y) {
         x,y, 
         tex.width,tex.height
     );
+    
+}
+void GameTexture::draw(int x, int y,int w, int h) {
+    drawTexture(tex, *screen, 0, 0, tex.width, tex.height, 
+        x,y, 
+        w,h
+    );
+}
+void GameTexture::draw(int x, int y,int w, int h,int s_w,int s_h) {
+    drawTexture(tex, *screen, 0, 0, s_w, s_h, 
+        x,y, 
+        w,h
+    );
 }
 int GameTexture::init(Bundle* resources,std::string path,TEXTURE *_screen) {
     screen = _screen;
@@ -14,6 +27,10 @@ int GameTexture::init(Bundle* resources,std::string path,TEXTURE *_screen) {
     unsigned width, height;
 
     tex_data.clear();  //make sure it's empty
+
+
+    //Set this
+    tex.has_transparency = true;
 
     std::vector<uint8_t> data = resources->load_raw_data(path.c_str()    );
 

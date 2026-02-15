@@ -162,7 +162,7 @@ int main()
     GameTexture ui_altitude;
 
     ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
-    ui_altitude.tex.transparent_color =  ui_altitude.tex_data.back() - 1;
+    ui_altitude.tex.transparent_color = 0x00;
 
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))

@@ -17,7 +17,10 @@ int VAB::load_model(Bundle* assets) {
     full_scene.push_back(me.get_object("floor"));
     full_scene.push_back(me.get_object("crate"));
     
-    side_panel.init(assets,"resources/fonts/font_bmp.png",screen);
+    side_panel.init(assets,"resources/ui/pallete.png",screen);
+    group_selector.init(assets,"resources/ui/selector.png",screen);
+    group_selector.tex.transparent_color = 0x00;
+
     return 0;
 }
 
@@ -39,6 +42,38 @@ void VAB::render(ProcessedPosition *processed) {
     if (isKeyPressed(KEY_NSPIRE_E)) {
         camera_height += rot_speed;
     }
+
+    if (isKeyPressed(KEY_NSPIRE_G)) {
+        show_pallete = false;
+    }
+    if (isKeyPressed(KEY_NSPIRE_H)) {
+        show_pallete = true;
+    }
+
+
+    if (isKeyPressed(KEY_NSPIRE_F) && group_index < 11 && !group_key_held) {
+        group_index++;
+        group_key_held = true;
+    }
+    if (isKeyPressed(KEY_NSPIRE_R) && group_index > 0 && !group_key_held) {
+        group_index--;
+        group_key_held = true;
+    }
+    if (!isKeyPressed(KEY_NSPIRE_F) && !isKeyPressed(KEY_NSPIRE_R)) group_key_held = false; 
+
+    if (isKeyPressed(KEY_NSPIRE_X) && part_sel_index < 17 && !part_sel_key_held) {
+        part_sel_index++;
+        part_sel_key_held = true;
+    }
+    if (isKeyPressed(KEY_NSPIRE_Z) && part_sel_index > 0 && !part_sel_key_held) {
+        part_sel_index--;
+        part_sel_key_held = true;
+    }
+    if (!isKeyPressed(KEY_NSPIRE_Z) && !isKeyPressed(KEY_NSPIRE_X)) part_sel_key_held = false; 
+
+    printf("psi: %d\n",part_sel_index);
+
+
 
     linalg::vec<float,3> out = cam.wrapper(); //Get rotation
     float damper = linalg::sin(out.x * 0.01745329);
@@ -95,9 +130,23 @@ void VAB::render(ProcessedPosition *processed) {
 
     glPopMatrix();
 
+    //Show pallete texture at 4x X-res
+    if (show_pallete) {
+        side_panel.draw(0,0,120,240);
+    } else {
+        side_panel.draw(0,0,20,240,5,60);
+    }
 
-    drawTexture(side_panel.tex,*screen,0,0,128,128,50,50,320,240);
-    
+    //Draw selector for groups
+    group_selector.draw(0,12+(group_index*16));
+
+    //Draw selector for parts
+    if (show_pallete) {
+        int calc_col = part_sel_index % 3;
+        int calc_row = part_sel_index / 3;
+        group_selector.draw(20+(32*calc_col),12+(calc_row*32),32,32);
+    }
+
 
     cam.dt = clock.dt;
 }
