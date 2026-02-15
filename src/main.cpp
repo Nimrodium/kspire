@@ -3,28 +3,16 @@
 #include "Utility/font.h"
 
 #include "Editor/VAB.h"
-
-template <typename T> T clamp(T in, T min, T max) {
-    if (in < min) { return min; }
-    if (in > max) { return max; }
-    return in;
-}
-
-inline float clamp(float x, float min, float max) {
-    if (x < min) {return min;}
-    if (x > max) {return max;}
-    return x;
-}
+#include "Utility/GameTexture.h"
 
 enum GameStates {
     MENU,
-    BUILD,
+    EDITOR,
     FLIGHT,
 };
 
 
-
-GameStates current_state = BUILD;
+GameStates current_state = MENU;
 
 Universe uni;
 VAB vab;
@@ -35,6 +23,10 @@ Fonts fonts;
 Bundle resource_bundle; //RESOURCE
 Bundle planet_bundle;   //BODY
 Bundle parts_bundle;    //PARTS
+
+//nGL stuff
+TEXTURE *screen;
+ProcessedPosition *processed;
 
 template <typename T> void debug_print(std::string preamble, T value, int x, int y, TEXTURE *screen, std::string unit = "") {
     preamble.append(std::to_string(value));
@@ -47,43 +39,20 @@ template <typename T> void debug_print(T value, int x, int y, TEXTURE *screen) {
     fonts.drawString(preamble.c_str(), 0xFFFF, *screen, x, y);
 }
 
-int main()
-{
-	if (!is_touchpad) { return 0;} //Only CX/CXII supported
-	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
 
-    // Initialize nGL
-    nglInit();
-    // Allocate the framebuffer
-    TEXTURE *screen = newTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 0, false);
-    nglSetBuffer(screen->bitmap);
-    vab.screen = screen;    
+//TO BE MOVED
 
-    if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
-        printf("Asset load error!!");
-        return 1;
-    }
-
-    //Load font data
-    if (fonts.init(&resource_bundle) != 0) {
-        printf("Error loading fonts!\n");
-    }
-
-
-    //LOAD PLANETS
+int scene_load_flight() {
     glColor3f(0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    current_state = GameStates::FLIGHT;
+    //LOAD PLANETS
+    
     fonts.drawString("Loading planets...",0xFFFF,*screen,10,220);
     nglDisplay();
 
     if (uni.planetarium.load_celestial_bodies(&resource_bundle)) return 1;
 
-
-    //will this explode i hope not....
-    ProcessedPosition *processed = new ProcessedPosition[9999];
-    uni.processed = processed;
-    uni.planetarium.processed = processed;
-  
     if (planet_bundle.load_asset_bundle("body.tar.gz.tns")) {
         printf("Asset load error!!");
         return 1;
@@ -117,26 +86,71 @@ int main()
     uni.planetarium.celestials[0].orbit.POS.z;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    printf("SOI of Sol: %f\n",uni.planetarium.get_soi(0));
-    printf("SOI of Earth: %f\n",uni.planetarium.get_soi(1));
-    printf("SOI of Moon: %f\n",uni.planetarium.get_soi(2));
-    
 
-    //ALSO MAKE SEPARATE LOADING AND DELOAD FUNCS!!
-    //Load VAB
-
+    fonts.drawString("Loading complete!",0xFFFF,*screen,10,220);
+    nglDisplay();
+    printf("Loading complete!\n");
+    return 0;
+}
+int scene_pack_flight() {
+    uni.pack();
+    return 0;
+}
+int scene_load_vab() {
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    current_state = GameStates::EDITOR;
     fonts.drawString("Loading VAB...",0xFFFF,*screen,10,220);
     nglDisplay();
     printf("Loading VAB...\n");
-    
     vab.load_model(&resource_bundle);
+    return 0;
+}
+int scene_pack_vab() {
+    vab.destroy_model();
+    return 0;
+}
 
-    fonts.drawString("Loading complete!",0xFFFF,*screen,10,220);
-    
-    nglDisplay();
 
-    printf("Loading complete!\n");
+
+
+
+int main()
+{
+	if (!is_touchpad) { return 0;} //Only CX/CXII supported
+	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
+
+    // Initialize nGL
+    nglInit();
+    // Allocate the framebuffer
+    screen = newTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 0, false);
+    nglSetBuffer(screen->bitmap);
+    vab.screen = screen;    
+
+    //Processed position for nGL
+    processed = new ProcessedPosition[9999];
+    uni.processed = processed;
+    uni.planetarium.processed = processed;
+
+    //Global bundle
+    if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
+        printf("Asset load error!!");
+        return 1;
+    }
+
+    //Load font data
+    if (fonts.init(&resource_bundle) != 0) {
+        printf("Error loading fonts!\n");
+    }
+
+
+    scene_load_flight();
+    //scene_load_vab();
+
+   
+    GameTexture sample_texture;
+
+    sample_texture.init(&resource_bundle,"resources/vab/crate.png",screen);
 
     #ifdef _TINSPIRE
     while(!isKeyPressed(KEY_NSPIRE_ESC))
@@ -148,25 +162,26 @@ int main()
         //Uni contains the main code of handling the flight scene. this is probably
         //Shitty but ill figure out how to do VAB stuff later. okay!
 
+        if (isKeyPressed(KEY_NSPIRE_1)) {
+            scene_pack_vab();
+            scene_load_flight();
+        }
+
+        
+        if (isKeyPressed(KEY_NSPIRE_2)) {
+            scene_pack_flight();
+            scene_load_vab();
+        }
+
+        
         if (current_state == GameStates::FLIGHT) {
             uni.step();
 
 
-            fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
-
-            // std::string warp_string = "WARP ";
-            // warp_string.append(std::to_string(uni.phys_warp_rate));
-            // fonts.drawString(warp_string.c_str(),0xFFFF,*screen,10,20);
-
-
+           
             std::string time_string = "Warp: x";
             time_string.append(std::to_string((int)(uni.timewarp.warp_rate + 0.5f)));
             fonts.drawString(time_string.c_str(),0xFFFF,*screen,200,220);
-
-            // std::string alt_string = "ALT ";
-            // alt_string.append(std::to_string((int)(uni.focused_vessel->protoVessel.altitude / 1000)));
-            // alt_string.append("km");
-            // fonts.drawString(alt_string.c_str(),0xFFFF,*screen,10,100);
 
             debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
             debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);
@@ -178,11 +193,16 @@ int main()
             debug_print("EPC ",uni.focused_vessel->orbit.epoch,10,150,screen);
 
         }
-        if (current_state == GameStates::BUILD) {
+        if (current_state == GameStates::EDITOR) {
 
             vab.render(processed);
     
         }
+        fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
+            
+        sample_texture.draw(0,0);
+        
+
         nglDisplay();
     }
 

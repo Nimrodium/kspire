@@ -43,8 +43,8 @@ void Planetarium::render_celestials() {
                 //Get draw length of body
                 auto delta = pp - vp;
                 float len = linalg::length(delta);
-                printf("Dist (m) to %s:%f\n",c.name.c_str(),len);
-                printf("^ planet X is %f\n",c.orbit.POS.x);
+                //printf("Dist (m) to %s:%f\n",c.name.c_str(),len);
+                //printf("^ planet X is %f\n",c.orbit.POS.x);
                 //3000 meter bubble
                 float fixed_bubble = 3000;
 

@@ -122,3 +122,11 @@ void Universe::render() {
     
 }
 
+//Pack away the flight scene
+void Universe::pack() {
+
+    planetarium.celestials.clear();
+    vessels.clear();
+
+}
+

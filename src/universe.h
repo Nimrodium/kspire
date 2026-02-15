@@ -48,6 +48,9 @@ class Universe {
 
     void render();
 
+    //Unload flight scene
+    void pack();
+
     Bundle *planet_bundle;
     Bundle *resource_bundle;
     Bundle *parts_bundle;

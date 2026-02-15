@@ -1,15 +1,8 @@
 #pragma once
 #include "../globals.h"
 #include "../World/Camera/camera.h"
+#include "../Utility/GameTexture.h"
 
-
-class GameTexture {
-public:
-    std::vector<uint16_t> tex_data;
-    TEXTURE tex;
-    int x, y;
-    int init(Bundle* resources,std::string path);
-};
 
 class VAB {
 public:
@@ -17,6 +10,7 @@ public:
     ModelGroup me;
     //Load ANGEL model
     int load_model(Bundle* assets);
+    void destroy_model();
     void render(ProcessedPosition *processed);
 private:
     std::vector<ngl_object*> full_scene;
