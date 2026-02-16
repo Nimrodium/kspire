@@ -1,12 +1,24 @@
 #pragma once
 #include "../globals.h"
 #include <unordered_map>
+#include "../Vessel/Part.h"
 
+
+
+
+//Contains the actual textures for a part.
+//DO NOT instantiate this into a vessel,
+//Ask the partloader for it by id.
 struct ProtoPart {
     ModelGroup group;
     std::vector<ngl_object*> models; //Supports multiple objects in an obj, such as flags on capsules, handrails and such
     std::string path;   //Path of part data
+    std::string objname;
     uint16_t shared_id;
+
+    //Doesnt use parent, children, etc.
+    //Only hold data from the cfg into here
+    Part default_data;
 };
 
 class PartLoader {

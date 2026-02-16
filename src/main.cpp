@@ -73,7 +73,7 @@ int scene_load_flight() {
     //DEBUG SHIHH
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
-    uni.vessels.push_back(new_vess);
+    uni.vessels.push_back(std::move(new_vess));
     uni.focused_vessel = &new_vess;
     uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
     

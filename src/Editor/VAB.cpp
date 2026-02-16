@@ -11,10 +11,10 @@ int VAB::Start(Bundle* assets, Bundle* parts) {
     part_tree.clear();
 
     Part part;
-    part_tree.push_back(part);
+    part_tree.push_back(std::move(part));
     Part part2;
     part2.attPos.x += 5;
-    part_tree.push_back(part2);
+    part_tree.push_back(std::move(part2));
 
     auto tp_i = touchpad_getinfo();
     tp_h = (float)tp_i->height;
