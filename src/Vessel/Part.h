@@ -71,7 +71,7 @@ class Part {
 
     std::vector<int> attach_rules;
 
-    int shared_id;
+    unsigned int shared_id;
     std::string name;
     std::string description;
     std::string category;

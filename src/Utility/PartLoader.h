@@ -19,7 +19,7 @@ struct ProtoPart {
     std::vector<ngl_object*> models; //Supports multiple objects in an obj, such as flags on capsules, handrails and such
     std::string path;   //Path of part data
     std::string objname;
-    uint16_t shared_id;
+    unsigned int shared_id;
 
     //Doesnt use parent, children, etc.
     //Only hold data from the cfg into here
@@ -30,8 +30,8 @@ class PartLoader {
 public:
     int load_parts(Bundle* _parts);
 
-    int get_part_by_id(unsigned int id);
-    //Make this a dict?
+    ProtoPart* get_part_by_id(unsigned int id);
+    std::vector<int> get_parts_of_category(std::string category);
 
 private:
     
@@ -42,6 +42,7 @@ private:
 
     Bundle* _parts;
     std::vector<std::string> folders;
+    //All found parts + TEXTURE DATA LIVE HERE
     std::vector<ProtoPart> raw_parts;
     std::unordered_map<int, size_t> tracked_parts;
 };

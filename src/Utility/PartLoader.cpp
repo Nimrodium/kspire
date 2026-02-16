@@ -37,6 +37,7 @@ void PartLoader::config_part(Part* part, const rapidjson::Value& d) {
     if (d.HasMember("drag_max") && d["drag_max"].IsNumber()) part->drag_max = d["drag_max"].GetFloat();
     if (d.HasMember("drag_ang") && d["drag_ang"].IsNumber()) part->drag_ang = d["drag_ang"].GetFloat();
     if (d.HasMember("temp_max") && d["temp_max"].IsNumber()) part->temp_max = d["temp_max"].GetFloat();
+    if (d.HasMember("buoyancy") && d["buoyancy"].IsNumber()) part->buoyancy = d["buoyancy"].GetFloat();
 
     
     if (d.HasMember("Nodes") && d["Nodes"].IsArray()) {
@@ -166,8 +167,10 @@ int PartLoader::load_parts(Bundle* parts) {
         p.group.load_group(parts,obj_locator);
         
 
-        printf("WARNING::::: LIST ALL OBJECTS IN THE SCENE USING ANGEL SHIT\n");
-
+        //printf("WARNING::::: LIST ALL OBJECTS IN THE SCENE USING ANGEL SHIT\n");
+        //Or just do part for now ig
+        //EXPAND THIS TO A SEARCH!!
+        p.models.emplace_back(p.group.get_object("part"));
 
     }
 
@@ -176,9 +179,24 @@ int PartLoader::load_parts(Bundle* parts) {
     //Load model
 
     //Track parts
-    printf("WARNIGN:::: STILL NEED TO TRACK PARTS!!\n");
+    printf("WARNIGN:::: STILL NEED TO  TRACK PARTS!!\n");
+
+    for (size_t i = 0; i < raw_parts.size(); ++i) {
+        tracked_parts.emplace(raw_parts[i].shared_id, i);
+    }
+
+    printf("PartLoader: Added %d parts.\n",tracked_parts.size());
 
     return 0;
+}
+
+//Grab protopart by a shared ID
+ProtoPart* PartLoader::get_part_by_id(unsigned int id) {
+    auto proto = tracked_parts.find(id);
+    if (proto == tracked_parts.end())
+        return nullptr;
+
+    return &raw_parts[proto->second];
 }
 
 //Get part data paths
@@ -206,12 +224,22 @@ int PartLoader::push_raw(Bundle* parts) {
     for (std::string &s : folders) {
         std::string folder_path = "parts/" + s;
         std::vector<std::string> ls = parts->ls(folder_path);
+        //S2 is each part folder
         for (std::string &s2 : ls) {
+            //Skip anything  that isnt a part
+            auto full_list = _parts->ls(folder_path + "/" + s2);
+            if (!(std::find(full_list.begin(),full_list.end(),"part.json") != full_list.end()))
+                continue;
+
+            //protoparts
             ProtoPart part;
+            
             if (s2.find_first_of('.') != std::string::npos) continue; //Skip stray files
             std::string part_path = folder_path + "/" + s2;
             part.path = part_path;
-            raw_parts.push_back(std::move(part));
+            raw_parts.emplace_back(std::move(part));
+
+            
         }
 
     }

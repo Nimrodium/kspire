@@ -130,6 +130,7 @@ int main()
     uni.processed = processed;
     uni.planetarium.processed = processed;
     vab.processed = processed;
+    vab.parts_master = &Parts;
 
     //Global bundle
     if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
@@ -154,12 +155,12 @@ int main()
 
     Parts.load_parts(&parts_bundle);
 
-
+    
 
     vab.hide_vab = true;
     //Debug init scene
     //scene_load_flight();
-    //scene_load_vab();
+    scene_load_vab();
 
     //parts_bundle.debug_list_assets();
 
@@ -170,7 +171,7 @@ int main()
     ui_altitude.tex.transparent_color = 0x00;
 
     #ifdef _TINSPIRE
-    while(!isKeyPressed(KEY_NSPIRE_ESC) && 1 == 0)
+    while(!isKeyPressed(KEY_NSPIRE_ESC))
     #else
     for(unsigned int i = 1300;--i;)
     #endif

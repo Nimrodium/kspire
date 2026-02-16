@@ -3,12 +3,14 @@
 #include "../World/Camera/camera.h"
 #include "../Utility/GameTexture.h"
 #include "../Vessel/Part.h"
+#include "../Utility/PartLoader.h"
 
 class VAB {
 public:
     TEXTURE *screen;
     
     ProcessedPosition *processed;
+    PartLoader* parts_master;
 
     //Reduce pallete to just side buttons
     bool show_pallete = false;

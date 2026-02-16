@@ -10,11 +10,18 @@ void VAB::destroy_model() {
 int VAB::Start(Bundle* assets, Bundle* parts) {
     part_tree.clear();
 
+
+    //DEBUG STUFF
     Part part;
+    part.shared_id = 5817571;
     part_tree.push_back(std::move(part));
     Part part2;
+    part2.shared_id = 5817571;
     part2.attPos.x += 5;
     part_tree.push_back(std::move(part2));
+    //END DEBUG STUFF
+
+
 
     auto tp_i = touchpad_getinfo();
     tp_h = (float)tp_i->height;
@@ -98,14 +105,6 @@ void VAB::Update() {
     clock.tick();
     touchpad_scan(&touchpad);
     editor_controls();
-
-    /*
-    printf("P: %d,Cont:%d Prox: %d\n",
-        touchpad.pressed,
-        touchpad.contact,
-        touchpad.proximity
-    );
-    */
 
     //VAB main code
 
@@ -210,10 +209,18 @@ void VAB::render() {
     
 
 
-    ngl_object* obj = part_group.get_object("MK1");
+    
+    
+    ngl_object* obj;
+    
 
     for(Part &p : part_tree) //Loop through AnGL scene
     {
+        if (parts_master->get_part_by_id(p.shared_id) == nullptr) continue;
+        if (parts_master->get_part_by_id(p.shared_id)->models.size() == 0) continue;
+        
+        
+        obj = parts_master->get_part_by_id(p.shared_id)->models[0]; //Only first object for now
         glPushMatrix();
         //Default origin
         glTranslatef(0,130,0);
