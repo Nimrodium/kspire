@@ -15,11 +15,11 @@ void PartLoader::config_part(ProtoPart* _pt) {
     auto full_list = _parts->ls(_pt->path);
 
     //Detect parts.json in the folder
-    if (!(std::find(full_list.begin(),full_list.end(),"part->json") != full_list.end()))
+    if (!(std::find(full_list.begin(),full_list.end(),"part.json") != full_list.end()))
         return;
 
 
-    std::vector<uint8_t> raw = _parts->load_raw_data((_pt->path + "/part->json").c_str());
+    std::vector<uint8_t> raw = _parts->load_raw_data((_pt->path + "/part.json").c_str());
 
     std::string json(raw.begin(),raw.end());
 
@@ -55,6 +55,8 @@ void PartLoader::config_part(ProtoPart* _pt) {
     if (d.HasMember("drag_ang") && d["drag_ang"].IsNumber()) part->drag_ang = d["drag_ang"].GetFloat();
     if (d.HasMember("temp_max") && d["temp_max"].IsNumber()) part->temp_max = d["temp_max"].GetFloat();
 
+
+    printf("tempm %f\n",part->temp_max);
 }
 
 int PartLoader::load_parts(Bundle* parts) {

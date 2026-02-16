@@ -64,9 +64,7 @@ class Part {
     //Nodes
     std::vector<Node> nodes;
     //Modules
-    std::vector<std::unique_ptr<Module>> modules;
-
-
+    std::vector<Module> modules;
 
 
     std::vector<int> attach_rules;
