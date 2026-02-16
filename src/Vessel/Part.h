@@ -14,8 +14,8 @@ enum Staging_Icons {
 
 
 struct Node {
-    std::vector<float> position;
-    std::vector<float> up;
+    linalg::vec<float,3> position;
+    linalg::vec<float,3> up;
     int size;
     int crossfeed;
     int rigid_attach;
@@ -35,13 +35,14 @@ enum ModTypes {
     MOD_Command,
     MOD_Tank,
     MOD_Decoupler,
-    MOD_Strut
+    MOD_Strut,
+    MOD_Torque
 };
 
 //I WAS gonna have multiple MOD_* parts, and inherit from Module here, but, doing so would require some
 //Horrifying std::move and conditional deep copying shit that doesnt make sense in a game of this scope
 struct Module {
-    std::string name;
+    std::string type;
     ModTypes module_type;
     float thrust = 0.0f;
 
@@ -65,7 +66,8 @@ class Part {
     std::vector<Node> nodes;
     //Modules
     std::vector<Module> modules;
-
+    //Resources
+    std::vector<Resource> resources;
 
     std::vector<int> attach_rules;
 
@@ -100,7 +102,7 @@ class Part {
 		CYLINDRICAL
 	};
 
-    float drag_max = 0.2f;
+    float drag_max = 0.19f;
     float drag_min = 0.1f;
     float drag_ang = 0.1f;
 
@@ -116,4 +118,6 @@ class Part {
     std::vector<float> CoPOffset;
     std::vector<float> CoLOffset;
     std::vector<float> CoBOffset;
+
+    std::string objname;
 };

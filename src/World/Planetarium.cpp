@@ -202,6 +202,7 @@ int Planetarium::load_celestial_bodies(Bundle* resources) {
 
         CelestialBody cb;
 
+        //You should really rewrite this and keep the style of PartLoader idiot
         //Grab values
         const char* s_name      = body["name"].GetString();
         const char* s_parent    = body["parent"].GetString();

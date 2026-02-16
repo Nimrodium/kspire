@@ -2,7 +2,12 @@
 #include "../globals.h"
 #include <unordered_map>
 #include "../Vessel/Part.h"
+#include "../../include/rapidjson/document.h"
+#include "../../include/rapidjson/writer.h"
+#include "../../include/rapidjson/stringbuffer.h"
 
+
+using namespace rapidjson;
 
 
 
@@ -32,8 +37,8 @@ private:
     
     int push_raw(Bundle* parts);
 
-    void config_part(ProtoPart* _pt);
-
+    void config_part(Part* part, const rapidjson::Value& d);
+    ModTypes string_to_mod(std::string s);
 
     Bundle* _parts;
     std::vector<std::string> folders;
