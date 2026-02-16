@@ -73,7 +73,7 @@ int scene_load_flight() {
     //DEBUG SHIHH
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
-    uni.vessels.emplace_back(new_vess);
+    uni.vessels.push_back(new_vess);
     uni.focused_vessel = &new_vess;
     uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
     
@@ -156,10 +156,10 @@ int main()
 
 
 
-    //vab.hide_vab = true;
+    vab.hide_vab = true;
     //Debug init scene
     //scene_load_flight();
-    scene_load_vab();
+    //scene_load_vab();
 
     //parts_bundle.debug_list_assets();
 
@@ -170,7 +170,7 @@ int main()
     ui_altitude.tex.transparent_color = 0x00;
 
     #ifdef _TINSPIRE
-    while(!isKeyPressed(KEY_NSPIRE_ESC))
+    while(!isKeyPressed(KEY_NSPIRE_ESC) && 1 == 0)
     #else
     for(unsigned int i = 1300;--i;)
     #endif

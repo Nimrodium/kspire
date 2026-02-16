@@ -3,10 +3,63 @@
 #include "../../include/rapidjson/writer.h"
 #include "../../include/rapidjson/stringbuffer.h"
 
+
 using namespace rapidjson;
 
-int PartLoader::load_parts(Bundle* parts) {
+
+//Get part.json
+void PartLoader::config_part(ProtoPart* _pt) {
+
+    //files (no paths)
+    auto full_list = _parts->ls(_pt->path);
+
+    //Detect parts.json in the folder
+    if (!(std::find(full_list.begin(),full_list.end(),"part.json") != full_list.end()))
+        return;
     
+
+    std::vector<uint8_t> raw = _parts->load_raw_data((_pt->path + "/part.json").c_str());
+    
+    std::string json(raw.begin(),raw.end());
+    
+    Document d;
+    d.Parse(json.c_str(),json.size());
+    
+    
+    if (d.HasMember("id") && d["id"].IsInt()) {
+        int id = d["id"].GetInt();
+        printf("ID %d\n",id);
+    }
+
+
+    
+
+
+}
+
+int PartLoader::load_parts(Bundle* parts) {
+    _parts = parts;
+    //Get part paths
+    if (push_raw(parts) != 0) return 4;
+
+    //Read config
+    for (ProtoPart &p : raw_parts) {
+        
+        config_part(&p);
+    }
+
+
+
+    //Load model
+
+    //Track parts
+    printf("TRACK PARTS!!\n");
+
+    return 0;
+}
+
+//Get part data paths
+int PartLoader::push_raw(Bundle* parts) {
     std::vector<uint8_t> raw = parts->load_raw_data("parts/database.json");
     std::string json(raw.begin(),raw.end());
 
@@ -26,14 +79,18 @@ int PartLoader::load_parts(Bundle* parts) {
         folders.emplace_back(std::string(bank.GetString()));
     }
     
-    printf("READ RECURS\n");
+    //Find all parts, push them to raw
+    for (std::string &s : folders) {
+        std::string folder_path = "parts/" + s;
+        std::vector<std::string> ls = parts->ls(folder_path);
+        for (std::string &s2 : ls) {
+            ProtoPart part;
+            if (s2.find_first_of('.') != std::string::npos) continue; //Skip stray files
+            std::string part_path = folder_path + "/" + s2;
+            part.path = part_path;
+            raw_parts.push_back(part);
+        }
 
-    std::vector<std::string> ls = parts->ls("parts");
-
-    for (std::string &s : ls) {
-        printf("GOT %s\n",s.c_str());
     }
-
-
     return 0;
 }
