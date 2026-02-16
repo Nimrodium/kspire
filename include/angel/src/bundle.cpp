@@ -70,6 +70,31 @@ namespace angel {
         }
     }
 
+    std::vector<std::string> Bundle::ls(std::string path) {
+        std::vector<std::string> full_list;
+        
+        if (path[path.back()] != '/')
+            path.append("/");
+
+        for (Asset a : assets) {
+            
+            //TODO convert all this shit to std::string
+            std::string name = std::string(a.name);
+
+            if (name.rfind(path) == 0) {
+                std::string lopped = name.substr(path.size()).c_str();
+                unsigned int pos = lopped.find_first_of("/");
+                if (pos != std::string::npos)
+                    lopped = lopped.substr(0,pos);
+
+                if(!(std::find(full_list.begin(), full_list.end(), lopped) != full_list.end()) && lopped != "")
+                    full_list.emplace_back(lopped);
+            }
+        }
+
+        return full_list;
+    }
+
 
     int Bundle::load_asset_bundle(const char* name) {
         free();

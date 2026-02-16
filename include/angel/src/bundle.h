@@ -29,6 +29,15 @@ namespace angel {
         //List all files in the asset
         void debug_list_assets();
 
+
+        /*
+        *   Return a list of all files+folders in a directory. Is not recursive.
+        *   Does not use a leading '/', If you want to read the path "audio/level_01" inside the tarball:
+        *   std::vector<std::string> ls = parts->ls("audio/level_01/");
+        *   OR std::vector<std::string> ls = parts->ls("audio/level_01");
+        */
+        std::vector<std::string> ls(std::string path);
+
         /*
         *   Load raw data from a file.
         *   name: filename (including file extension)

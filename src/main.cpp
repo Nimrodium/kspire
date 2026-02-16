@@ -4,6 +4,7 @@
 
 #include "Editor/VAB.h"
 #include "Utility/GameTexture.h"
+#include "Utility/PartLoader.h"
 
 enum GameStates {
     MENU,
@@ -17,7 +18,7 @@ bool loading = true;
 
 Universe uni;
 VAB vab;
-
+PartLoader Parts;
 Fonts fonts;
 
 //Angel Asset bundles
@@ -103,8 +104,6 @@ int scene_load_vab() {
     return 0;
 }
 
-
-
 int scene_pack_flight() {
     uni.pack();
     return 0;
@@ -113,7 +112,6 @@ int scene_pack_vab() {
     vab.destroy_model();
     return 0;
 }
-
 
 int main()
 {
@@ -154,13 +152,16 @@ int main()
         return 1;
     }
 
+    Parts.load_parts(&parts_bundle);
+
+
 
     vab.hide_vab = true;
     //Debug init scene
     //scene_load_flight();
-    scene_load_vab();
+    //scene_load_vab();
 
-    planet_bundle.debug_list_assets();
+    //parts_bundle.debug_list_assets();
 
    
     GameTexture ui_altitude;
@@ -169,7 +170,7 @@ int main()
     ui_altitude.tex.transparent_color = 0x00;
 
     #ifdef _TINSPIRE
-    while(!isKeyPressed(KEY_NSPIRE_ESC))
+    while(!isKeyPressed(KEY_NSPIRE_ESC) && 1 == 0)
     #else
     for(unsigned int i = 1300;--i;)
     #endif
@@ -231,55 +232,10 @@ int main()
     
         }
         fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
-            
-        
-        
 
         nglDisplay();
     }
 
-    
-
-    /*
-
-
-
-        //CAPSULE
-        glPushMatrix();
-
-		glTranslatef(0, 0, 0);
-
-        nglRotateX(200);
-        nglRotateZ(300);
-		nglRotateY(270);
-        //nglRotateX(angle.normaliseAngle());
-        //nglRotateY(angle.normaliseAngle());
-
-
-        glScale3f(20, 20, 20);
-
-
-        obj = scene[1];
-        glBindTexture(obj->texture);
-        nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
-
-
-
-        glPopMatrix();
-
-
-        glPopMatrix();
-
-        nglDisplay();
-        big_counter ++;
-        planet_angle -= 0.0002f * physics.step_time * clock.dt;
-
-        physics.step(clock.dt);
-    }
-
-
-
-    */
     delete[] processed;
     // Deinitialize nGL
     nglUninit();
