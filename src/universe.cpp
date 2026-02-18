@@ -37,7 +37,7 @@ void Universe::Update() {
             if (v.loaded) {
                 
                 
-                v.orbit.physics_to_rails(universal_time);
+                //v.orbit.physics_to_rails(universal_time);
             }
         }
     }
@@ -77,7 +77,7 @@ void Universe::Update() {
             step_physics_orbit_for_v(&v);
             
         } else {
-            step_rails_orbit_for_v(&v);
+            //step_rails_orbit_for_v(&v);
         }
     }
 

@@ -19,7 +19,7 @@ public:
     std::vector<Part> part_tree;
 
     //Load ANGEL model
-    int Start(Bundle* assets, Bundle* parts);
+    int Start(Bundle* assets);
     void destroy_model();
     
     void Update();
@@ -48,15 +48,24 @@ private:
     bool part_sel_key_held = false;
 
     //Holding part?
-    bool  grabbed_part = false;
+    bool  has_grabbed_part = false;
     bool pad_held = false;  //Holding click
+    Part* grabbed_part;
+    float part_raycast_threshold = 20.0f;
 
     void render();
     void editor_controls();
     void onClick_oneshot();
 
+
+    linalg::vec<float,3> raycast_camera(linalg::vec<float,3> out);
+
     //Touchpad
     float tp_h;
     float tp_w;
     touchpad_report_t touchpad;
+
+    int tsx, tsy, tsx_o,tsy_o;
+
+    linalg::vec<float,3> current_cam_rotation;
 };

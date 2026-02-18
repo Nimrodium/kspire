@@ -5,6 +5,7 @@
 #include "Editor/VAB.h"
 #include "Utility/GameTexture.h"
 #include "Utility/PartLoader.h"
+#include "Utility/cursor.h"
 
 enum GameStates {
     MENU,
@@ -20,6 +21,7 @@ Universe uni;
 VAB vab;
 PartLoader Parts;
 Fonts fonts;
+Cursor cursor;
 
 //Angel Asset bundles
 Bundle resource_bundle; //RESOURCE
@@ -73,8 +75,8 @@ int scene_load_flight() {
     //DEBUG SHIHH
     Vessel new_vess;
     new_vess.is_focused = new_vess.loaded = true;   //Setup for active + phys
-    uni.vessels.push_back(std::move(new_vess));
-    uni.focused_vessel = &new_vess;
+    uni.vessels.emplace_back(std::move(new_vess));
+    uni.focused_vessel = &uni.vessels.back();
     uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
     
     uni.planetarium.celestials[0].load_model(uni.planet_bundle);
@@ -92,6 +94,7 @@ int scene_load_flight() {
 }
 
 int scene_load_vab() {
+    
     loading = true;
     glColor3f(0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -99,16 +102,19 @@ int scene_load_vab() {
     fonts.drawString("Loading VAB...",0xFFFF,*screen,10,220);
     nglDisplay();
     printf("Loading VAB...\n");
-    vab.Start(&resource_bundle,&parts_bundle);
+    vab.Start(&resource_bundle);
     loading = false;
+    cursor.set_cursor_visibility(true);
     return 0;
 }
 
 int scene_pack_flight() {
+    cursor.set_cursor_visibility(false);
     uni.pack();
     return 0;
 }
 int scene_pack_vab() {
+    cursor.set_cursor_visibility(false);
     vab.destroy_model();
     return 0;
 }
@@ -116,6 +122,7 @@ int scene_pack_vab() {
 int main()
 {
 	if (!is_touchpad) { return 0;} //Only CX/CXII supported
+    cursor.set_cursor_visibility(false);
 	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
 
     // Initialize nGL
@@ -132,6 +139,8 @@ int main()
     vab.processed = processed;
     vab.parts_master = &Parts;
 
+    
+    
     //Global bundle
     if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
         printf("Asset load error!!");
@@ -163,8 +172,7 @@ int main()
     scene_load_vab();
 
     //parts_bundle.debug_list_assets();
-
-   
+    
     GameTexture ui_altitude;
 
     ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
@@ -176,6 +184,12 @@ int main()
     for(unsigned int i = 1300;--i;)
     #endif
     {
+        touchpad_report_t touchpad;
+        touchpad_scan(&touchpad);
+
+        cursor.set_cursor_position(touchpad.x,touchpad.y);
+        
+
         //Contains physics and render code for the flight scene
         //Uni contains the main code of handling the flight scene. this is probably
         //Shitty but ill figure out how to do VAB stuff later. okay!
@@ -208,14 +222,17 @@ int main()
 
         
         if (current_state == GameStates::FLIGHT) {
-            uni.Update();
 
-            //Altitude
-            ui_altitude.draw(0,0);
-            debug_print("",(int)(uni.universal_time),2,3,screen,"s");
-            debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
-           
-            debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+            if (uni.focused_vessel != nullptr) {
+                uni.Update();
+
+                //Altitude
+                ui_altitude.draw(0,0);
+                debug_print("",(int)(uni.universal_time),2,3,screen,"s");
+                debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
+            
+                debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+            }
             /*
             debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
             debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);

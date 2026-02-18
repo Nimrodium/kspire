@@ -5,7 +5,6 @@
 //On rails orbit things
 struct Orbit {
 
-
     //ON RAILS
     double ApA; //Apopsis Altitude, to surface
     double ApR; //Apopsis Radius, to center
@@ -30,8 +29,8 @@ struct Orbit {
     //TESTING: Set vessel starting point. 
 
     //EQUI REFERENCE FRAME TO PARENT BODY
-    linalg::vec<double,3> POS = {0 * 1000, 5000 * 1000, -15000 * 1000};    //  m
-    linalg::vec<double,3> VEL = {3.672 * 1000, 0 * 1000, 0 * 1000};    //  m/s
+    linalg::vec<double,3> POS = {0 * 1000, 0 * 1000, -2000 * 1000};    //  m
+    linalg::vec<double,3> VEL = {1 * 1000, 1 * 1000, 1 * 1000};    //  m/s
 
     //Calculate keplarian elements based on input universal time
     void calculate_state_from_keplers(double _UNIVERSAL_TIME);

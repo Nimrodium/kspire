@@ -3,43 +3,43 @@
 
 class ProtoVessel {
     public:
-    uint16_t persistentId;
-    bool vesselSpawning;
-    bool landed;
-    bool splashed;
+    uint16_t persistentId = 0;
+    bool vesselSpawning = true;
+    bool landed = false;
+    bool splashed = false;
     std::string vesselName = "Unnamed Vessel";
-    int rootIndex;
+    int rootIndex = 0;
 
     //Staging
-    int stage;
-    int currentStage;
+    int stage = 0;
+    int currentStage = 0;
 
-    double distanceTraveled;
+    double distanceTraveled = 0;
 
     //In scene, rather volatile
     //Transform transform;
     
 
-    float altitude;
-    float latitude;
-    float longitude;
+    float altitude = 0;
+    float latitude = 0;
+    float longitude = 0;
 
-    linalg::vec<float,3> CoM;
+    linalg::vec<float,3> CoM = {0,0,0};
 
-    float gForce;
+    float gForce = 0;
 
-    float launchTime;
+    float launchTime = 0;
 
-    float heightFromSurface;
+    float heightFromSurface = 0;
     
-    float obt_speed;
+    float obt_speed = 0;
 
     //Position and Velocity relative to home body
-    linalg::vec<float,3> position;
+    linalg::vec<float,3> position = {0,0,0};
 
-    linalg::vec<float,3> velocity;
+    linalg::vec<float,3> velocity = {0,0,0};
 
-    linalg::vec<float,4> rotation;
+    linalg::vec<float,4> rotation = {0,0,0,0};
 
     private:
 };

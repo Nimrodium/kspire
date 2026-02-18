@@ -31,7 +31,9 @@ void Planetarium::render_celestials() {
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
 
                 //The 1 is temporary
-                auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
+                //auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
+
+                auto vp = planet_to_universe(focused_vessel->orbit.POS,1);
 
                 auto pp = planet_to_universe({0,0,0},find_body_by_name(c.name));
 
@@ -60,9 +62,8 @@ void Planetarium::render_celestials() {
 
                 float angular_diameter = 2.0f * (c.radius / len);
                 float render_radius = angular_diameter * fixed_bubble;
-                render_radius /=5;
-                
-                printf("ANGD %f\n",angular_diameter);
+
+
                 
                 glScale3f(render_radius, render_radius, render_radius);
                 glBindTexture(obj->texture);
@@ -71,7 +72,7 @@ void Planetarium::render_celestials() {
                 //reformat
                 if (focused_vessel != nullptr) {
                     if (c.name == "Earth") {
-                        focused_vessel->protoVessel.altitude = len;
+                        focused_vessel->protoVessel.altitude = len - c.radius; //SL alt
 
                     }
 
@@ -295,8 +296,9 @@ int Planetarium::load_celestial_bodies(Bundle* resources) {
         if (c.parent == "") continue;
 
         CelestialBody *parent = &celestials[find_body_by_name(c.parent)];
-        double calc_mu = c.mass + parent->mass;
-        calc_mu *= 6.6743E-11;
+        //double calc_mu = c.mass + parent->mass;
+        //calc_mu *= 6.6743E-11;
+        double calc_mu = parent->mass * 6.6743E-11;
         c.orbit.mu = calc_mu;
     }
 
