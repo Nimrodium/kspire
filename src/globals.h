@@ -26,6 +26,8 @@ struct KSPIRE_Touchpad : touchpad_report_t {
     float y_screen_normalized;
     KSPIRE_Touchpad();
     void Update();
+
+    
 };
 
 struct DT {

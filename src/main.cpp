@@ -258,9 +258,9 @@ int main()
         debug_print("Ty ",kspire_pad.y_screen,10,80,screen);
         
 
-        debug_print("Swx ",kspire_pad.w,60,50,screen);
+        debug_print("Svx ",kspire_pad.x_velocity,60,50,screen);
     
-        debug_print("Shy ",kspire_pad.h,60,80,screen);
+        debug_print("Svy ",kspire_pad.y_velocity,60,80,screen);
         
 
         nglDisplay();

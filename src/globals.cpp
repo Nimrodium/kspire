@@ -26,9 +26,20 @@ void KSPIRE_Touchpad::Update() {
         y_screen = x_screen_normalized * (float)SCREEN_HEIGHT;
     }
 
-    if (relative_mode && true_contact) {
+    else if (relative_mode) {
+        
 
-        printf("CONTACT!\n");
+        int yvsigned = (y_velocity > 127) ? y_velocity - 256 : y_velocity;
+        y_screen += yvsigned / 2;
+        int xvsigned = (x_velocity > 127) ? x_velocity - 256 : x_velocity;
+        x_screen += xvsigned / 2;
+        
+        
+        if (y_screen < 0) y_screen = 0;
+        if (y_screen > SCREEN_HEIGHT) y_screen = SCREEN_HEIGHT;
+
+        printf("yv%d\n",y_velocity);
+
     }
 
     
