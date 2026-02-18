@@ -23,22 +23,30 @@ void KSPIRE_Touchpad::Update() {
         x_screen_normalized = ((float)x / (float)w);
         y_screen_normalized = ((float)y / (float)h);
         x_screen = x_screen_normalized * (float)SCREEN_WIDTH;
-        y_screen = x_screen_normalized * (float)SCREEN_HEIGHT;
-    }
+        y_screen = y_screen_normalized * (float)SCREEN_HEIGHT;
+    } else if (relative_mode) {
+        auto goodpow = [](float num, float pow) {
+            return (num < 0 ? -1.0f : 1.0f) * linalg::pow(fabs(num), pow);
+        };
 
-    else if (relative_mode) {
-        
+        float yvsigned = (y_velocity > 127) ? y_velocity - 256 : y_velocity;
+        float xvsigned = (x_velocity > 127) ? x_velocity - 256 : x_velocity;
 
-        int yvsigned = (y_velocity > 127) ? y_velocity - 256 : y_velocity;
+        xvsigned = goodpow(xvsigned,MOUSE_ACCELERATION);
+        yvsigned = goodpow(yvsigned,MOUSE_ACCELERATION);
+
         y_screen += yvsigned / 2;
-        int xvsigned = (x_velocity > 127) ? x_velocity - 256 : x_velocity;
         x_screen += xvsigned / 2;
         
         
+        
+        if (x_screen < 0) x_screen = 0;
+        if (x_screen > SCREEN_WIDTH) x_screen = SCREEN_WIDTH;
         if (y_screen < 0) y_screen = 0;
         if (y_screen > SCREEN_HEIGHT) y_screen = SCREEN_HEIGHT;
 
-        printf("yv%d\n",y_velocity);
+        x_screen_normalized = ((float)x_screen / SCREEN_WIDTH);
+        y_screen_normalized = ((float)y_screen / SCREEN_HEIGHT);
 
     }
 

@@ -17,16 +17,23 @@ int VAB::Start(Bundle* assets) {
     //DEBUG STUFF
     Part part;
     part = parts_master->get_part_by_id(5817571)->default_data;
-    part.unique_id = (unsigned int)&part * part_tree.size();
+    part.unique_id = (unsigned int)&part % 10000000;
+    for (unsigned int i = 0; i < part.nodes.size(); i++) {
+        part.nodes[i].unique_id = i + (part.unique_id * 10);
+    }
+
     part_tree.push_back(std::move(part));
     Part part2;
     part2 = parts_master->get_part_by_id(5817571)->default_data;
-    part.unique_id = (unsigned int)&part2  * part_tree.size();
+    part2.unique_id = (unsigned int)&part2 % 10000000;
+
+    for (unsigned int i = 0; i < part2.nodes.size(); i++) {
+        part2.nodes[i].unique_id = i + (part2.unique_id * 10);
+    }
     part2.attPos.x += 5;
     part_tree.push_back(std::move(part2));
     //END DEBUG STUFF
 
-    
 
     //Render VAB scene For release
     if (!hide_vab) {
@@ -62,15 +69,15 @@ void VAB::editor_controls() {
     if (isKeyPressed(KEY_NSPIRE_CTRL)) camera_zoom -= rot_speed;
     if (isKeyPressed(KEY_NSPIRE_SHIFT)) camera_zoom += rot_speed;
 
-    if (isKeyPressed(KEY_NSPIRE_Q)) camera_height -= rot_speed;
-    if (isKeyPressed(KEY_NSPIRE_E) ) camera_height += rot_speed;
+    if (isKeyPressed(KEY_NSPIRE_Q) || isKeyPressed(KEY_NSPIRE_TAB)) camera_height -= rot_speed;
+    if (isKeyPressed(KEY_NSPIRE_E) || isKeyPressed(KEY_NSPIRE_SCRATCHPAD)) camera_height += rot_speed;
 
     //Keyboard pallete show hide
     // if (isKeyPressed(KEY_NSPIRE_G)) show_pallete = false;
     // if (isKeyPressed(KEY_NSPIRE_H)) show_pallete = true;
 
 
-    //Keyboard Paging
+    //Keyboard Paging (PC)
     if (isKeyPressed(KEY_NSPIRE_F) && page_index < 11 && !page_key_held) {
         page_index++;
         page_key_held = true;
@@ -116,6 +123,7 @@ void VAB::onClick_oneshot() {
             part_tree[found].attPos = point;
     } else {
         has_grabbed_part = false;
+        stopped_grabbing = true;
         grabbed_part = nullptr;
     }
 
@@ -127,10 +135,7 @@ void VAB::Update() {
     clock.tick();
 
     editor_controls();
-
-    //Update camera from touchpad if hand is free
-    if (!has_grabbed_part) cam.camera_controller(Camera::FREE);
-
+    
     //VAB main code
     tsx_o = tsx; tsy_o = tsy;
 
@@ -178,14 +183,16 @@ void VAB::Update() {
         {
             if (&p == grabbed_part) continue; //Skip self
 
-            for (Node &n : p.nodes) {
+            for (Node &n : p.nodes) { //Client nodes
                 auto client_pos = (mult*n.position) + p.attPos;
-                for (Node &n_2 : grabbed_part->nodes) {
+                for (Node &n_2 : grabbed_part->nodes) { //Host node
                     auto host_pos = (mult*n_2.position) + grabbed_part->attPos;
                     float len = linalg::length(host_pos - client_pos);
                     if (len < snap_thresh) {
-                        
                         grabbed_part->attPos = client_pos - (mult*n_2.position);
+                        n.attached_node = n_2.unique_id;    //Link
+                        n_2.attached_node = n.unique_id;    //Link
+                        break;
                     }
                 }
 
@@ -203,7 +210,10 @@ void VAB::Update() {
         pad_held = true;
         onClick_oneshot();
     }
-    if (!kspire_pad.pressed) pad_held = false; //Release
+    
+    if (!has_grabbed_part && !stopped_grabbing) cam.camera_controller(Camera::FREE);
+    if (!kspire_pad.pressed) {pad_held = false; stopped_grabbing = false;}//release
+
 
     render();
     cam.dt = clock.dt;
@@ -270,6 +280,25 @@ void VAB::render() {
 
     ngl_object* obj;
 
+
+
+
+    //TESTING HIGHLIGHT
+
+    Part* found = nullptr;
+    auto point = raycast_camera(current_cam_rotation);
+        
+    for (size_t i = 0; i < part_tree.size(); ++i) {
+        float off = linalg::length(part_tree[i].attPos - point);
+        if (off < part_raycast_threshold) {
+            found = &part_tree[i];
+            break;
+        }
+    }
+
+
+
+
     //Part tree also contains detached parts. ( No parent )if there are any theyre nuked.
     for(Part &p : part_tree) //Loop through AnGL scene
     {
@@ -280,6 +309,7 @@ void VAB::render() {
 
 
         obj = parts_master->get_part_by_id(p.shared_id)->models[0]; //Only first object for now
+        auto highlit = parts_master->get_part_by_id(p.shared_id)->models.back(); //Highlit
         glPushMatrix();
         //Standard origin
         glTranslatef(0,130,0);
@@ -290,8 +320,15 @@ void VAB::render() {
             p.attPos.z);
 
         glScale3f(10,10,10);
-        glBindTexture(obj->texture);
-        nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode, true);
+        if (&p == found && highlit != nullptr && !has_grabbed_part) { //Highlight (unless grabbed)
+          glPushMatrix();
+          glBindTexture(highlit->texture);
+          nglDrawArray(highlit->vertices, highlit->count_vertices, highlit->positions, highlit->count_positions, processed, highlit->draw_mode, true);
+          glPopMatrix();
+        } else {
+            glBindTexture(obj->texture);
+            nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode, true);
+        }
 
         //Show nodes on grab
          if (has_grabbed_part /* && grabbed_part == &p*/) {

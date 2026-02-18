@@ -139,7 +139,13 @@ int main()
     vab.processed = processed;
     vab.parts_master = &Parts;
 
-    
+    //Check for firebird dev env presense to affix absolute mouse mode, otherwise stay in relative mode
+    if (fopen("firebird.tns","r") != nullptr) {
+        kspire_pad.relative_mode = false;
+    }
+
+
+
     
     //Global bundle
     if (resource_bundle.load_asset_bundle("resources.tar.gz.tns")) {
@@ -165,6 +171,8 @@ int main()
     Parts.load_parts(&parts_bundle);
 
     
+    
+
 
     vab.hide_vab = true;
     //Debug init scene
@@ -249,19 +257,9 @@ int main()
             vab.Update();
     
         }
-        fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
-        debug_print("Tprox ",kspire_pad.proximity,10,150,screen);
-        debug_print("Tcont ",kspire_pad.true_contact,10,130,screen);
-        
-        debug_print("Tx ",kspire_pad.x_screen,10,50,screen);
-        
-        debug_print("Ty ",kspire_pad.y_screen,10,80,screen);
-        
-
-        debug_print("Svx ",kspire_pad.x_velocity,60,50,screen);
-    
-        debug_print("Svy ",kspire_pad.y_velocity,60,80,screen);
-        
+        if (vab.show_pallete || current_state != GameStates::EDITOR) {
+            fonts.drawString("DEMO BUILD",0xFFFF,*screen,10,220);
+        }
 
         nglDisplay();
     }

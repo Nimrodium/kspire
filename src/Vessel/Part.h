@@ -19,7 +19,18 @@ struct Node {
     int size;
     int crossfeed;
     int rigid_attach;
+
+    //Comes from part unique ID, but *10, then index of this node is added.
+    //Example: part ID is 5817571
+    //As long as you dont 
+    //Node 0: 58175710
+    //Node 1: 58175712
+    //Node 2: 58175713
+    //Formula: (p:unique_id * 10) + Node:index
+
     unsigned int unique_id;
+    //Same, but for the node it's attached to.
+    unsigned int attached_node;
 };
 
 
@@ -72,7 +83,11 @@ class Part {
 
     std::vector<int> attach_rules;
 
+
+    //Comes from assets, identifies what part this is.
     unsigned int shared_id = 0;
+
+    //Which instance of the part is this? pseudorandomly generated per part, stored in save.
     unsigned int unique_id = 0;
     std::string name;
     std::string description;

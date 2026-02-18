@@ -7,6 +7,7 @@
 #include <memory>
 
 #define CONTACT_THRESHOLD  47
+#define MOUSE_ACCELERATION 1.23f
 
 using namespace::angel;
 
@@ -14,8 +15,6 @@ using namespace::angel;
 struct KSPIRE_Touchpad : touchpad_report_t {
     //SET
     bool relative_mode = true;
-    float dpi = 1;
-
     //GET
     bool true_contact;
     int w;

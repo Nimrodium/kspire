@@ -33,6 +33,7 @@ private:
     ModelGroup node_g;
     ngl_object* node;
 
+
     float camera_height = 30;
     float camera_angle = 30;
     float camera_zoom = -20;
@@ -50,9 +51,12 @@ private:
 
     //Holding part?
     bool  has_grabbed_part = false;
+    //magic stuff that makes the camera not move
+    //when you place down a part
+    bool stopped_grabbing = false;
     bool pad_held = false;  //Holding click
     Part* grabbed_part;
-    float part_raycast_threshold = 20.0f;
+    float part_raycast_threshold = 30.0f;
 
     void render();
     void editor_controls();
