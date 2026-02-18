@@ -21,6 +21,10 @@ struct ProtoPart {
     std::string objname;
     unsigned int shared_id;
 
+    std::string editor_name;
+    std::string editor_description;
+    std::string editor_category;
+
     //Doesnt use parent, children, etc.
     //Only hold data from the cfg into here
     Part default_data;

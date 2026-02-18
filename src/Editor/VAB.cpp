@@ -30,7 +30,7 @@ int VAB::Start(Bundle* assets) {
     for (unsigned int i = 0; i < part2.nodes.size(); i++) {
         part2.nodes[i].unique_id = i + (part2.unique_id * 10);
     }
-    part2.attPos.x += 5;
+    part2.pos.x += 5;
     part_tree.push_back(std::move(part2));
     //END DEBUG STUFF
 
@@ -110,7 +110,7 @@ void VAB::onClick_oneshot() {
         auto point = raycast_camera(current_cam_rotation);
         
         for (size_t i = 0; i < part_tree.size(); ++i) {
-            float off = linalg::length(part_tree[i].attPos - point);
+            float off = linalg::length(part_tree[i].pos - point);
             if (off < part_raycast_threshold) {
                 found = i;
                 has_grabbed_part = true;
@@ -120,7 +120,7 @@ void VAB::onClick_oneshot() {
         }
 
         if (found != -1)
-            part_tree[found].attPos = point;
+            part_tree[found].pos = point;
     } else {
         has_grabbed_part = false;
         stopped_grabbing = true;
@@ -169,7 +169,7 @@ void VAB::Update() {
         for(Part &p : part_tree)
         {
             if (&p == grabbed_part)
-                p.attPos = raycast_camera(current_cam_rotation);
+                p.pos = raycast_camera(current_cam_rotation);
         }
     }
 
@@ -184,14 +184,14 @@ void VAB::Update() {
             if (&p == grabbed_part) continue; //Skip self
 
             for (Node &n : p.nodes) { //Client nodes
-                auto client_pos = (mult*n.position) + p.attPos;
+                auto client_pos = (mult*n.position) + p.pos;
                 for (Node &n_2 : grabbed_part->nodes) { //Host node
-                    auto host_pos = (mult*n_2.position) + grabbed_part->attPos;
+                    auto host_pos = (mult*n_2.position) + grabbed_part->pos;
                     float len = linalg::length(host_pos - client_pos);
                     if (len < snap_thresh) {
-                        grabbed_part->attPos = client_pos - (mult*n_2.position);
-                        n.attached_node = n_2.unique_id;    //Link
-                        n_2.attached_node = n.unique_id;    //Link
+                        grabbed_part->pos = client_pos - (mult*n_2.position);
+                        // n.attached_node = n_2.unique_id;    //Link
+                        // n_2.attached_node = n.unique_id;    //Link
                         break;
                     }
                 }
@@ -289,7 +289,7 @@ void VAB::render() {
     auto point = raycast_camera(current_cam_rotation);
         
     for (size_t i = 0; i < part_tree.size(); ++i) {
-        float off = linalg::length(part_tree[i].attPos - point);
+        float off = linalg::length(part_tree[i].pos - point);
         if (off < part_raycast_threshold) {
             found = &part_tree[i];
             break;
@@ -315,9 +315,9 @@ void VAB::render() {
         glTranslatef(0,130,0);
 
         //Offset by part pos
-        glTranslatef(p.attPos.x,
-            p.attPos.y,
-            p.attPos.z);
+        glTranslatef(p.pos.x,
+            p.pos.y,
+            p.pos.z);
 
         glScale3f(10,10,10);
         if (&p == found && highlit != nullptr && !has_grabbed_part) { //Highlight (unless grabbed)

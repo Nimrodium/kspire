@@ -12,6 +12,10 @@ enum Staging_Icons {
     NONE
 };
 
+enum Attach_Mode {
+    Stack,
+    Surface
+};
 
 struct Node {
     linalg::vec<float,3> position;
@@ -71,6 +75,7 @@ class Part {
     public:
     //Attachment
     bool attached;
+    linalg::vec<float,3> pos;
     linalg::vec<float,3> attPos;
     linalg::vec<float,4> attRotation;
 
@@ -89,10 +94,6 @@ class Part {
 
     //Which instance of the part is this? pseudorandomly generated per part, stored in save.
     unsigned int unique_id = 0;
-    std::string name;
-    std::string description;
-    std::string category;
-
 
     //SYMM
     std::vector<Part*> symmetry_tochters;
@@ -135,6 +136,4 @@ class Part {
     std::vector<float> CoPOffset;
     std::vector<float> CoLOffset;
     std::vector<float> CoBOffset;
-
-    std::string objname;
 };

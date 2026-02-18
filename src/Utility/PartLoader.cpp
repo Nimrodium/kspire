@@ -24,13 +24,8 @@ void PartLoader::config_part(Part* part, const rapidjson::Value& d) {
     //WIP
     part->icon = Staging_Icons::CAPSULE;
 
-    //COMMON
+    //SHARED ID!!!!!!!!!!!!1 NOT UNIQUE
     if (d.HasMember("id") && d["id"].IsInt()) part->shared_id = d["id"].GetInt();
-    if (d.HasMember("name") && d["name"].IsString()) part->name = d["name"].GetString();
-    if (d.HasMember("description") && d["description"].IsString()) part->description = d["description"].GetString();
-    if (d.HasMember("category") && d["category"].IsString()) part->category = d["category"].GetString();
-    if (d.HasMember("model") && d["model"].IsString()) part->objname = d["model"].GetString();
-
 
     if (d.HasMember("mass") && d["mass"].IsNumber()) part->mass = d["mass"].GetFloat();
     if (d.HasMember("drag_min") && d["drag_min"].IsNumber()) part->drag_min = d["drag_min"].GetFloat();
@@ -154,10 +149,15 @@ int PartLoader::load_parts(Bundle* parts) {
 
         //Read static part mode
         config_part(&p.default_data,d); //Can also be used for loading from save.
-        
-        //Copy values that can't be transferred
-        p.objname   = p.default_data.objname;
         p.shared_id = p.default_data.shared_id;
+
+        //Members that should not be stored in the vessel
+        if (d.HasMember("name") && d["name"].IsString()) p.editor_name = d["name"].GetString();
+        if (d.HasMember("description") && d["description"].IsString()) p.editor_description = d["description"].GetString();
+        if (d.HasMember("category") && d["category"].IsString()) p.editor_category = d["category"].GetString();
+        if (d.HasMember("model") && d["model"].IsString()) p.objname = d["model"].GetString();
+
+
 
         //And finally load the nGL model
         
@@ -210,7 +210,7 @@ std::vector<int> PartLoader::get_parts_of_category(std::string category) {
     std::vector<int> res;
 
     for (ProtoPart &p : raw_parts) {
-        if (p.default_data.category == category) res.emplace_back(p.shared_id);
+        if (p.editor_category == category) res.emplace_back(p.shared_id);
     }
     return res;
 }
