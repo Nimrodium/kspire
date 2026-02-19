@@ -258,8 +258,8 @@ namespace angel {
                 ngl_object new_thing;
                 new_thing.name = current_object_name;
                 objects.push_back(new_thing); object_index++; //Advance which object were modifying
-                printf("Created new object: %s\t",current_object_name.c_str());
-                printf("index: %d \n",object_index);
+                //printf("Created new object: %s\t",current_object_name.c_str());
+                //printf("index: %d \n",object_index);
                 //Go to NL
                 while (lineidx < obj.size() && obj[lineidx] != '\n') lineidx++;
                 lineidx++;
@@ -428,8 +428,8 @@ namespace angel {
 
 
 
-        printf("Model loading complete! Parsing material...\n");
-        printf("name:%s\n",mat_name.c_str());
+        //printf("Model loading complete! Parsing material...\n");
+        //printf("name:%s\n",mat_name.c_str());
         //Load material
         std::vector<uint8_t> mat = asset_bundle->load_raw_data(mat_name.c_str());
         if (mat.size() == 0)
@@ -540,7 +540,7 @@ namespace angel {
                     //Combine path obtained in the first steps of load_group, to allow for semi relative pathing in mats.
                     std::string full_path = path + usemat_name;
                     int error = load_texture_into_material(asset_bundle,full_path,&group_materials.back(),true);
-                    printf("Size of mats is : %d\n",group_materials.size());
+
                     if (error) {printf("Error loading texture %s into material.\n",usemat_name.c_str());}
                     printf("Applied to %s\n",group_materials.back().name.c_str());
                 }
