@@ -3,18 +3,18 @@
 
 class ProtoVessel {
     public:
-    uint16_t persistentId = 0;
-    bool vesselSpawning = true;
+    uint16_t unique_id = 0;
+    bool vessel_spawning = true;
     bool landed = false;
     bool splashed = false;
-    std::string vesselName = "Unnamed Vessel";
-    int rootIndex = 0;
+    std::string vessel_name = "Unnamed Vessel";
+    int root_index = 0;
 
     //Staging
     int stage = 0;
     int currentStage = 0;
 
-    double distanceTraveled = 0;
+    double distance_travelled = 0;
 
     //In scene, rather volatile
     //Transform transform;
@@ -28,9 +28,9 @@ class ProtoVessel {
 
     float gForce = 0;
 
-    float launchTime = 0;
+    float launch_epoch = 0;
 
-    float heightFromSurface = 0;
+    float height_from_surface = 0;
     
     float obt_speed = 0;
 
