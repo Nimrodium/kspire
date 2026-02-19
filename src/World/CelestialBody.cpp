@@ -28,3 +28,7 @@ int CelestialBody::switch_texture(std::string name) {
 void CelestialBody::clear_model() {
     group.free_group();
 }
+
+CelestialBody:: ~CelestialBody() {
+    clear_model();
+}

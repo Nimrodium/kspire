@@ -67,10 +67,19 @@ int scene_load_flight() {
     glColor3f(0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     current_state = GameStates::FLIGHT;
-    fonts.drawString("Loading...",0xFFFF,*screen,10,220);
+    fonts.drawString("Loading planets...",0xFFFF,*screen,10,220);
     nglDisplay();
 
     scene_pack_flight();
+
+    uni.planetarium.clear_celestial_models();
+    uni.planetarium.load_celestial_bodies(&resource_bundle);
+
+    //Only using earth moon and sun right now
+    uni.planetarium.celestials[0].load_model(&planet_bundle);
+    uni.planetarium.celestials[1].load_model(&planet_bundle);
+    uni.planetarium.celestials[2].load_model(&planet_bundle);
+
 
     //DEBUG SHIHH
     Vessel new_vess;
@@ -108,16 +117,12 @@ int scene_load_vab() {
 int scene_load_menu() {
     current_state = GameStates::MENU;
     loading = true;
+    uni.planetarium.clear_celestial_models();
+    uni.planetarium.load_celestial_bodies(&resource_bundle);
+    //Only using earth and moon
+    uni.planetarium.celestials[1].load_model(&planet_bundle);
+    uni.planetarium.celestials[2].load_model(&planet_bundle);
 
-
-    printf("tesitn: %f\n",
-        uni.planetarium.celestials[1].mass);
-        printf("tesitn: %d\n",
-            uni.planetarium.celestials[1].me->count_positions);
-            printf("tesitn: %f\n",
-                uni.planetarium.celestials[1].radius);
-                
-    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     title.load_title(&resource_bundle,uni.planetarium.celestials[1].me,uni.planetarium.celestials[2].me);
     loading = false;
@@ -205,11 +210,6 @@ int main()
 
     vab.hide_vab = true;
     //Debug init scene
-
-    //TODO: why does this crash if planets get loaded  and packed twice in a row or more....
-    uni.planetarium.celestials[0].load_model(&planet_bundle);
-    uni.planetarium.celestials[1].load_model(&planet_bundle);
-    uni.planetarium.celestials[2].load_model(&planet_bundle);
 
     scene_load_menu();
     //scene_load_flight();
@@ -310,7 +310,8 @@ int main()
     scene_pack_flight();
     scene_pack_vab();
     scene_pack_menu();
-    uni.planetarium.celestials.clear();
+    uni.planetarium.clear_celestial_models();
+    uni.planetarium.celestials.clear(); //Only ever really call this here
 
     delete[] processed;
     // Deinitialize nGL

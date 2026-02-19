@@ -8,6 +8,9 @@
 //Holds all the planets
 class Planetarium {
 public:
+    //If you want to call clear on this that's fine, just regenerate with load_celestial_bodies before attempting
+    //to load any more bodies.
+    //use clear_celestial_models() to free for loading and stuff
     std::vector<CelestialBody> celestials;
 
     ProcessedPosition *processed;
@@ -15,6 +18,8 @@ public:
     Vessel *focused_vessel;
 
     int load_celestial_bodies(Bundle* resources);
+    void clear_celestial_models();
+
     //Mode 0 : Distant, up to LO. Mode 1: PQS
     //Calculated inside.
     void render_celestials();

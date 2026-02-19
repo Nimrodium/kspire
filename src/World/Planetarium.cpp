@@ -173,6 +173,11 @@ linalg::vec<double,3> Planetarium::planet_to_universe(linalg::vec<double,3> loca
     return pos;
 }
 
+//Clear out the heaps of texture and model any loaded celestials eat up.
+void Planetarium::clear_celestial_models() {
+    for (CelestialBody &c : celestials)
+        c.clear_model();
+}
 
 int Planetarium::load_celestial_bodies(Bundle* resources) {
     printf("LOADING BODIES FROM JSON\n");

@@ -132,6 +132,10 @@ void Universe::render() {
 void Universe::pack() {
     //Dont do this here mkay? :3
     //planetarium.celestials.clear();
+
+    //This instead!!
+    planetarium.clear_celestial_models();
+
     vessels.clear();
 
 }

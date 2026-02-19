@@ -32,7 +32,7 @@ class CelestialBody {
     int switch_texture(std::string name);
 
     void clear_model();
-
+    ~CelestialBody();
     ngl_object* me;
 
     private:
