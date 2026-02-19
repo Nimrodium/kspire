@@ -79,12 +79,6 @@ int scene_load_flight() {
     uni.focused_vessel = &uni.vessels.back();
     uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
     
-    uni.planetarium.celestials[0].load_model(uni.planet_bundle);
-    uni.planetarium.celestials[2].load_model(uni.planet_bundle);
-    //earth 1 is always loaded in FIRST. at title
-    //so is the moon too
-
-    uni.planetarium.celestials[1].load_model(uni.planet_bundle);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -115,15 +109,20 @@ int scene_load_menu() {
     current_state = GameStates::MENU;
     loading = true;
 
-    //Make this call earth and moon instead of index?
-    uni.planetarium.celestials[1].load_model(&planet_bundle);
-    uni.planetarium.celestials[2].load_model(&planet_bundle);
-    
+
+    printf("tesitn: %f\n",
+        uni.planetarium.celestials[1].mass);
+        printf("tesitn: %d\n",
+            uni.planetarium.celestials[1].me->count_positions);
+            printf("tesitn: %f\n",
+                uni.planetarium.celestials[1].radius);
+                
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     title.load_title(&resource_bundle,uni.planetarium.celestials[1].me,uni.planetarium.celestials[2].me);
     loading = false;
     cursor.set_cursor_visibility(false);
+    
     return 0;
 }
 
@@ -134,6 +133,11 @@ int scene_pack_menu() {
 
 int main()
 {
+    //Set pointers to bundles
+    uni.planet_bundle = &planet_bundle;
+    uni.resource_bundle = &resource_bundle;
+    uni.parts_bundle = &parts_bundle;
+    
 	if (!is_touchpad) { return 0;} //Only CX/CXII supported
     cursor.set_cursor_visibility(false);
 	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
@@ -197,31 +201,30 @@ int main()
     
     if (uni.planetarium.load_celestial_bodies(&resource_bundle)) return 1;
 
-    //Set pointers to bundles
-    uni.planet_bundle = &planet_bundle;
-    uni.resource_bundle = &resource_bundle;
-    uni.parts_bundle = &parts_bundle;
+    
 
     vab.hide_vab = true;
     //Debug init scene
 
+    //TODO: why does this crash if planets get loaded  and packed twice in a row or more....
+    uni.planetarium.celestials[0].load_model(&planet_bundle);
+    uni.planetarium.celestials[1].load_model(&planet_bundle);
+    uni.planetarium.celestials[2].load_model(&planet_bundle);
+
     scene_load_menu();
-    scene_load_flight();
+    //scene_load_flight();
     //scene_load_vab();
     //scene_load_menu();
 
-    return 0;
+
     //Move this please!!! u toopid
     GameTexture ui_altitude;
 
     ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
     ui_altitude.tex.transparent_color = 0x00;
 
-    #ifdef _TINSPIRE
+
     while(!isKeyPressed(KEY_NSPIRE_ESC) && break_game == 0)
-    #else
-    for(unsigned int i = 1300;--i;)
-    #endif
     {
         kspire_pad.Update();
         
@@ -307,6 +310,7 @@ int main()
     scene_pack_flight();
     scene_pack_vab();
     scene_pack_menu();
+    uni.planetarium.celestials.clear();
 
     delete[] processed;
     // Deinitialize nGL

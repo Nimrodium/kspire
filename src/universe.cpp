@@ -130,8 +130,8 @@ void Universe::render() {
 
 //Pack away the flight scene
 void Universe::pack() {
-
-    planetarium.celestials.clear();
+    //Dont do this here mkay? :3
+    //planetarium.celestials.clear();
     vessels.clear();
 
 }

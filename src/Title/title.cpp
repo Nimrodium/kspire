@@ -31,12 +31,12 @@ int Title::Update() {
         return 600;
     }
 
-
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //Render
     if (obj != nullptr) {
 
-        glColor3f(0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         glPushMatrix();
 
         glTranslatef(30,-23,100);
@@ -51,31 +51,32 @@ int Title::Update() {
         nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
         glPopMatrix();
 
-        //Title screen
-        texture_set.draw(0,0,229,81,229,81);
-        //Orbit line
-        drawTextureOverlay(texture_set.tex,0,82,*screen,0,0,229,92);
-        //Main Buttons
-        drawTexture(texture_set.tex,*screen,0,174,149,75,SCREEN_WIDTH-149,SCREEN_HEIGHT-75,149,75);
-
-        //Menu buttons
-        switch (select_index) {
-            case 0: drawTexture(texture_set.tex,*screen,0,249,149,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-75,149,23);
-            break;
-            case 1: drawTexture(texture_set.tex,*screen,0,249,149,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-49,149,23);
-            break;
-            case 2: drawTexture(texture_set.tex,*screen,0,275
-                ,93,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-23,93,23);
-            break;
-            case 3: drawTexture(texture_set.tex,*screen,92,275
-                ,57,23,SCREEN_WIDTH-58,SCREEN_HEIGHT-23,57,23);
-            break;
-            default:
-            break;
-
-        }
+        
+        
     }
-    
+    //Title screen
+    texture_set.draw(0,0,229,81,229,81);
+    //Orbit line
+    drawTextureOverlay(texture_set.tex,0,82,*screen,0,0,229,92);
+    //Main Buttons
+    drawTexture(texture_set.tex,*screen,0,174,149,75,SCREEN_WIDTH-149,SCREEN_HEIGHT-75,149,75);
+
+    //Menu buttons
+    switch (select_index) {
+        case 0: drawTexture(texture_set.tex,*screen,0,249,149,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-75,149,23);
+        break;
+        case 1: drawTexture(texture_set.tex,*screen,0,249,149,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-49,149,23);
+        break;
+        case 2: drawTexture(texture_set.tex,*screen,0,275
+            ,93,23,SCREEN_WIDTH-149,SCREEN_HEIGHT-23,93,23);
+        break;
+        case 3: drawTexture(texture_set.tex,*screen,92,275
+            ,57,23,SCREEN_WIDTH-58,SCREEN_HEIGHT-23,57,23);
+        break;
+        default:
+        break;
+    }
+        
     angle += 0.04f;
 
     return 0;
