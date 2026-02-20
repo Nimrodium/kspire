@@ -1,4 +1,4 @@
-#include "title.h"
+    #include "title.h"
 
 //To avoid memory leaks it uses the nglobject from the loaded planets.
 //It was orignally just gonna load it on it's own, but apparently that crashes
@@ -13,6 +13,7 @@ void Title::load_title(Bundle* resources,ngl_object* _obj,ngl_object* _moon) {
 }
 
 int Title::Update() {
+    clock.tick();
     if (isKeyPressed(KEY_NSPIRE_DOWN) && buttons_wiped)
         {select_index++; buttons_wiped = false;}
     if (isKeyPressed(KEY_NSPIRE_UP) && buttons_wiped)
@@ -79,7 +80,7 @@ int Title::Update() {
         break;
     }
         
-    angle += 0.04f;
+    angle += 20.0f * clock.dt;
 
     return 0;
 }

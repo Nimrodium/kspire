@@ -1,31 +1,24 @@
-GCC = nspire-gcc
-GPP = nspire-g++
-LD = nspire-ld
-GENZEHN = genzehn
-OPTIMIZE ?= fast
-GCCFLAGS = -O$(OPTIMIZE) -I nGL -I . -Wall -W -marm -ffast-math -mcpu=arm926ej-s -fno-math-errno -fomit-frame-pointer -flto -fno-rtti -fgcse-sm -fgcse-las -funsafe-loop-optimizations -fno-fat-lto-objects -frename-registers -fprefetch-loop-arrays -mno-thumb-interwork -ffunction-sections -fdata-sections -fno-exceptions -D NDEBUG
-LDFLAGS = -lm -lz -Wl,--gc-sections
-ZEHNFLAGS = --name "kspire" --version 0 --author "nul" --notice "KSP on Nspire!" --compress
-EXE = kspire
+CXX = g++
+CXXFLAGS = -O2 -Wall
+LIBS = -lz -lSDL
+HDRS = -I include
+
+SRCS = $(wildcard $(SRC)/*.cpp)
 OBJS = $(patsubst %.c, %.o, $(shell find . -name \*.c))
 OBJS += $(patsubst %.cpp, %.o, $(shell find . -name \*.cpp))
 OBJS += $(patsubst %.S, %.o, $(shell find . -name \*.S))
 
-all: $(EXE).tns
+OUT = bin/
+all: build
+
+build: $(OBJS)
+	@mkdir -p $(OUT)
+	$(CXX) $(HDRS) $(LIBS) $(OBJS) -o $(OUT)/kspire
 
 %.o: %.cpp
-	@echo Compiling $<...
-	@$(GPP) -std=c++23 $(GCCFLAGS) -c $< -o $@
-
-$(EXE).elf: $(OBJS)
-	+$(LD) $^ -o $@ $(GCCFLAGS) $(LDFLAGS)
-
-$(EXE).tns: $(EXE).elf
-	+$(GENZEHN) --input $^ --output $@.zehn $(ZEHNFLAGS)
-	+make-prg $@.zehn $@
-	+rm $@.zehn
-
-.PHONY: clean
+	$(CXX) $(CXXFLAGS) $(HDRS) -c $< -o $@
+run: build
+	$(OUT)/kspire
 clean:
-	rm -f `find . -name \*.o`
-	rm -f $(EXE).tns $(EXE).elf
+	@rm -rf $(OUT)/kspire
+	@rm -rf $(OBJS)

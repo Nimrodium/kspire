@@ -145,11 +145,13 @@ int scene_pack_menu() {
 
 int main()
 {
+
+    printf("BEGIN\n");
     //Set pointers to bundles
     uni.planet_bundle = &planet_bundle;
     uni.resource_bundle = &resource_bundle;
     uni.parts_bundle = &parts_bundle;
-    
+
 	if (!is_touchpad) { return 0;} //Only CX/CXII supported
     cursor.set_cursor_visibility(false);
 	SDL_Init(SDL_INIT_VIDEO); //Using SDL for timing
@@ -218,8 +220,8 @@ int main()
 
     vab.hide_vab = true;
     //Debug init scene
-    //scene_load_menu();
-    scene_load_flight();
+    scene_load_menu();
+    //scene_load_flight();
     //scene_load_vab();
 
 
@@ -232,6 +234,12 @@ int main()
 
     while(!isKeyPressed(KEY_NSPIRE_ESC) && break_game == 0)
     {
+
+        //Tell kde were healthy
+        SDL_Event event;
+        SDL_PollEvent(&event);
+
+
         kspire_pad.Update();
         
         

@@ -66,7 +66,7 @@ namespace angel {
     void Bundle::debug_list_assets() {
         for (Asset a : assets) {
             printf("%s\tSize: ",a.name);
-            printf("%ld bytes\n",a.length);
+            printf("%d bytes\n",(int)a.length);
         }
     }
 
@@ -103,7 +103,7 @@ namespace angel {
         uint8_t buf[512];
 
 
-        
+        printf("Name of : %s\n",name);
         file = gzopen(name, "rb");
 
         //Return if borked

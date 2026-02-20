@@ -2,7 +2,11 @@
 
 void Cursor::set_cursor_visibility(bool _switch) {
     volatile int* cur_ctl = (volatile int*)PL111_cursor_ctl;
+    #ifdef _TINSPIRE
     cur_ctl[0] = _switch;
+    #else
+    cur_ctl++;  //Compiler Chloroform    
+    #endif
 }
 void Cursor::set_cursor_position(int _x, int _y) {
     volatile int* cur_pos = (volatile int*)PL111_cursor_pos;
@@ -12,5 +16,10 @@ void Cursor::set_cursor_position(int _x, int _y) {
     val |= (_y & 0x3FF);
     val &= ~((0xFFF)<< 16);
     val |= ((_x & 0x3FF) << 16);
+
+    #ifdef _TINSPIRE
     *cur_pos = val;
+    #else
+    cur_pos++;  //Compiler Chloroform    
+    #endif
 }

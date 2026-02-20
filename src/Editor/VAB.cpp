@@ -17,7 +17,7 @@ int VAB::Start(Bundle* assets) {
     //DEBUG STUFF
     Part part;
     part = parts_master->get_part_by_id(5817571)->default_data;
-    part.unique_id = (unsigned int)&part % 10000000;
+    part.unique_id = (unsigned int)part.unique_id % 10000000;
     for (unsigned int i = 0; i < part.nodes.size(); i++) {
         part.nodes[i].unique_id = i + (part.unique_id * 10);
     }
@@ -25,7 +25,7 @@ int VAB::Start(Bundle* assets) {
     part_tree.push_back(std::move(part));
     Part part2;
     part2 = parts_master->get_part_by_id(5817571)->default_data;
-    part2.unique_id = (unsigned int)&part2 % 10000000;
+    part2.unique_id = (unsigned int)part2.unique_id % 10000000;
 
     for (unsigned int i = 0; i < part2.nodes.size(); i++) {
         part2.nodes[i].unique_id = i + (part2.unique_id * 10);
@@ -115,7 +115,7 @@ void VAB::onClick_oneshot() {
         } else { //Create new part
             Part part;
             part = parts_master->get_part_by_id(5817571)->default_data;
-            part.unique_id = (unsigned int)&part % 10000000;
+            part.unique_id = (unsigned int)part.unique_id % 10000000;
             for (unsigned int i = 0; i < part.nodes.size(); i++) {
                 part.nodes[i].unique_id = i + (part.unique_id * 10);
             }
@@ -465,7 +465,7 @@ void VAB::render() {
                 ,calc_row + 98
                 ,300
             );
-            nglRotateY(fmod(pallete_r,360.0f));
+            nglRotateY((float)fmod(pallete_r,360.0f));
 
             glScale3f(10,10,10);
             glBindTexture(obj->texture);

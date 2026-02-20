@@ -27,7 +27,9 @@ static const TEXTURE *texture;
 static unsigned int vertices_count = 0;
 static VERTEX vertices[4];
 static GLDrawMode draw_mode = GL_TRIANGLES;
+#ifdef _TINSPIRE
 static bool is_monochrome;
+#endif
 static COLOR *screen_inverted; //For monochrome calcs
 #ifdef FPS_COUNTER
     volatile unsigned int fps;

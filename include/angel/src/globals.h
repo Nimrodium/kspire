@@ -2,12 +2,18 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <libndls.h>
+//#include <libndls.h>
 #include "zlib.h"
 #include "../inc/lodepng/lodepng.h"
 #include "../inc/nGL/gl.h"
 #include "../inc/nGL/texturetools.h"
 #include "../inc/nGL/gldrawarray.h"
+
+//MODIFICATIONS FROM MAIN BRANCH: THEY ARE FOR WINDOWS PORTING!!! 
+//DO NOT COMMIT THEM BLINDLY - PLEASE ADD PREPROCESSOR STUFF!!!!!
+
+
+
 namespace angel {
 
     //Texture data object for ngl.
