@@ -141,6 +141,20 @@ void VAB::onClick_oneshot() {
                 has_grabbed_part = true;
                 grabbed_part = i;
                 //Unlink part
+                printf("Unlinked nodes.\n");
+
+
+                //Need to find the other node
+                int calculated_index =0;
+                Node detachee = part_tree[i].nodes[calculated_index];
+
+                detachee.attached_node = NULL;
+
+                //HOW TO FIND THE OTHER NODE??? becuase like:
+                //You can unlink both sides, that would work but sucks for the user if they
+                //want to move an entire stack / part tree. kinda sucks.
+                //So make a function that finds the root, and get the opposite node? that could work i guess
+                //i need another dev fr
 
                 break;
             }
@@ -169,10 +183,10 @@ void VAB::onClick_oneshot() {
                             part_tree[grabbed_part].pos = client_pos - (mult*n_2.position);
                             n.attached_node = n_2.unique_id;    //Link
                             n_2.attached_node = n.unique_id;    //Link
+                            printf("Linked nodes.\n");
                             break;
                         }
                     }
-
                 }
             }
         }
