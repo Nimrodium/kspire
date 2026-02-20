@@ -15,7 +15,7 @@ all: $(EXE).tns
 
 %.o: %.cpp
 	@echo Compiling $<...
-	@$(GPP) -std=c++11 $(GCCFLAGS) -c $< -o $@
+	@$(GPP) -std=c++23 $(GCCFLAGS) -c $< -o $@
 
 $(EXE).elf: $(OBJS)
 	+$(LD) $^ -o $@ $(GCCFLAGS) $(LDFLAGS)

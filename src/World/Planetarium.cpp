@@ -13,16 +13,46 @@ void Planetarium::render_celestials() {
     //Should i do distance from CAMERA instead??????
 
     for (CelestialBody& c : celestials) {
+        auto vp = planet_to_universe(focused_vessel->orbit.POS,1);
+
+        auto pp = planet_to_universe({0,0,0},find_body_by_name(c.name));
+
+        //Vessel coordinate in planet space, per planet
+        float v_x = pp.x-vp.x;
+        float v_z = pp.y-vp.y;
+        float v_y = pp.z-vp.z;
+
+        //Get draw length of body
+        auto delta = pp - vp;
+        float len = linalg::length(delta);
+        float altitude = len - c.radius;
+
+        
         glPushMatrix();
         int mode = 0;
+
         //Check if vessel is low enough to render in nearby mode
-        if (1 == 5) {
+        if (altitude < 700000) {
             mode = 1;
         }
+
+
 
         if (mode) {
             //Mode 1 PQS
             printf("Mode 1 not implemented!\n");
+            //Gonna have to gen PQS... UGHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+            auto calc_sight = [](float altitude, float radius) {
+                float calc;
+
+                return calc;
+            };
+
+            
+
+
+
         } else {
             auto obj = c.me;
             if (obj != nullptr)
@@ -33,18 +63,7 @@ void Planetarium::render_celestials() {
                 //The 1 is temporary
                 //auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
 
-                auto vp = planet_to_universe(focused_vessel->orbit.POS,1);
-
-                auto pp = planet_to_universe({0,0,0},find_body_by_name(c.name));
-
-                //Vessel coordinate in planet space, per planet
-                float v_x = pp.x-vp.x;
-                float v_z = pp.y-vp.y;
-                float v_y = pp.z-vp.z;
-
-                //Get draw length of body
-                auto delta = pp - vp;
-                float len = linalg::length(delta);
+                
                 //printf("Dist (m) to %s:%f\n",c.name.c_str(),len);
                 //printf("^ planet X is %f\n",c.orbit.POS.x);
                 //3000 meter bubble
@@ -68,15 +87,16 @@ void Planetarium::render_celestials() {
                 glScale3f(render_radius, render_radius, render_radius);
 
 
-                glBindTexture(obj->texture);
+                if (obj->texture != nullptr && obj->positions != nullptr) {
+                    glBindTexture(obj->texture);
 
-                nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
-
+                    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+                }
         
                 //reformat
                 if (focused_vessel != nullptr) {
                     if (c.name == "Earth") {
-                        focused_vessel->protoVessel.altitude = len - c.radius; //SL alt
+                        focused_vessel->protoVessel.altitude = altitude; //SL alt
 
                     }
 

@@ -65,7 +65,7 @@ void Universe::Update() {
         for (Vessel &v : vessels) {
             if (v.loaded) {
                 
-                
+                printf({"timewarp disabled lol\n"});
                 //v.orbit.physics_to_rails(universal_time);
             }
         }
@@ -103,7 +103,7 @@ void Universe::Update() {
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated AND LOADED
         if (v.loaded && timewarp.is_physics_warp) {
-            step_physics_orbit_for_v(&v);
+            //step_physics_orbit_for_v(&v);
             
         } else {
             //step_rails_orbit_for_v(&v);
