@@ -55,14 +55,14 @@ private:
     //when you place down a part
     bool stopped_grabbing = false;
     bool pad_held = false;  //Holding click
-    Part* grabbed_part;
+    int grabbed_part; //Index
     float part_raycast_threshold = 30.0f;
 
     void render();
     void editor_controls();
     void onClick_oneshot();
 
-
+    
     linalg::vec<float,3> raycast_camera(linalg::vec<float,3> out);
 
     int tsx, tsy, tsx_o,tsy_o;

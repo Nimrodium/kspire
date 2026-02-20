@@ -100,20 +100,18 @@ void VAB::editor_controls() {
     if (!isKeyPressed(KEY_NSPIRE_Z) && !isKeyPressed(KEY_NSPIRE_X)) part_sel_key_held = false;
 }
 
+
+
+
 //Actions for mouse click, happens once on click
 void VAB::onClick_oneshot() {
 
     //Palette action
     if (show_pallete && kspire_pad.x_screen > 20) {
-        printf("Grabbed new part.\n");
+        printf("Spawned new part.\n");
         if (has_grabbed_part) { //Holding part?
-            for (size_t i = 0; i < part_tree.size(); ++i) {
-                if (&part_tree[i] == grabbed_part) {
-                    part_tree.erase(part_tree.begin() + i);
-                    has_grabbed_part = false;
-                    break;
-                }
-            }
+            has_grabbed_part = false;
+            part_tree.erase(part_tree.begin()+grabbed_part); //Need to make this work with a whole subtree
         } else { //Create new part
             Part part;
             part = parts_master->get_part_by_id(5817571)->default_data;
@@ -126,13 +124,13 @@ void VAB::onClick_oneshot() {
             part_tree.push_back(std::move(part));
             //Put it in the hand
             has_grabbed_part = true;
-            grabbed_part = &part_tree.back();
+            grabbed_part = part_tree.size()-1;
             show_pallete = false;
         }
     }
 
     //Check for part grab with raycast (Uses stale camera rotation but its okay)
-    else if (!has_grabbed_part) {
+    else if (!has_grabbed_part) {                           //TLDR: Grab the part
         int found = -1;
         auto point = raycast_camera(current_cam_rotation);
         
@@ -141,17 +139,50 @@ void VAB::onClick_oneshot() {
             if (off < part_raycast_threshold) {
                 found = i;
                 has_grabbed_part = true;
-                grabbed_part = &part_tree[i];
+                grabbed_part = i;
+                //Unlink part
+
                 break;
             }
         }
 
         if (found != -1)
             part_tree[found].pos = point;
-    } else {
+    } else {                                                //TLDR Place the part
+
+        //MOVE THIS !!!!!!!!!!!
+        //TODO: make this node::size dependent
+        float snap_thresh = 6.0f;
+        float mult = 22.0f;
+        //Snapping
+        if (has_grabbed_part) {
+            for(Part &p : part_tree)
+            {
+                if (&p == &part_tree[grabbed_part]) continue; //Skip self
+
+                for (Node &n : p.nodes) { //Client nodes
+                    auto client_pos = (mult*n.position) + p.pos;
+                    for (Node &n_2 : part_tree[grabbed_part].nodes) { //Host node
+                        auto host_pos = (mult*n_2.position) + part_tree[grabbed_part].pos;
+                        float len = linalg::length(host_pos - client_pos);
+                        if (len < snap_thresh) {
+                            part_tree[grabbed_part].pos = client_pos - (mult*n_2.position);
+                            n.attached_node = n_2.unique_id;    //Link
+                            n_2.attached_node = n.unique_id;    //Link
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        
+
+
         has_grabbed_part = false;
         stopped_grabbing = true;
-        grabbed_part = nullptr;
+        grabbed_part = NULL;
     }
 
 
@@ -195,7 +226,7 @@ void VAB::Update() {
     if (has_grabbed_part) {
         for(Part &p : part_tree)
         {
-            if (&p == grabbed_part)
+            if (&p == &part_tree[grabbed_part])
                 p.pos = raycast_camera(current_cam_rotation);
         }
     }
@@ -204,19 +235,19 @@ void VAB::Update() {
     //TODO: make this node::size dependent
     float snap_thresh = 6.0f;
     float mult = 22.0f;
-    //Snapping
+    //Snapping, reversible
     if (has_grabbed_part) {
         for(Part &p : part_tree)
         {
-            if (&p == grabbed_part) continue; //Skip self
+            if (&p == &part_tree[grabbed_part]) continue; //Skip self
 
             for (Node &n : p.nodes) { //Client nodes
                 auto client_pos = (mult*n.position) + p.pos;
-                for (Node &n_2 : grabbed_part->nodes) { //Host node
-                    auto host_pos = (mult*n_2.position) + grabbed_part->pos;
+                for (Node &n_2 : part_tree[grabbed_part].nodes) { //Host node
+                    auto host_pos = (mult*n_2.position) + part_tree[grabbed_part].pos;
                     float len = linalg::length(host_pos - client_pos);
                     if (len < snap_thresh) {
-                        grabbed_part->pos = client_pos - (mult*n_2.position);
+                        part_tree[grabbed_part].pos = client_pos - (mult*n_2.position);
                         // n.attached_node = n_2.unique_id;    //Link
                         // n_2.attached_node = n.unique_id;    //Link
                         break;
