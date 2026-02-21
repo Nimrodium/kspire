@@ -49,6 +49,7 @@
             gnumake
             SDL
             zlib
+            bear
           ];
           shellHook = ''
             export LD_LIBRARY_PATH=${pkgs.sdl2-compat}/lib:$LD_LIBRARY_PATH
