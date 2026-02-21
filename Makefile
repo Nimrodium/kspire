@@ -1,31 +1,9 @@
-GCC = nspire-gcc
-GPP = nspire-g++
-LD = nspire-ld
-GENZEHN = genzehn
-OPTIMIZE ?= fast
-GCCFLAGS = -O$(OPTIMIZE) -I nGL -I . -Wall -W -marm -ffast-math -mcpu=arm926ej-s -fno-math-errno -fomit-frame-pointer -flto -fno-rtti -fgcse-sm -fgcse-las -funsafe-loop-optimizations -fno-fat-lto-objects -frename-registers -fprefetch-loop-arrays -mno-thumb-interwork -ffunction-sections -fdata-sections -fno-exceptions -D NDEBUG
-LDFLAGS = -lm -lz -Wl,--gc-sections
-ZEHNFLAGS = --name "kspire" --version 0 --author "nul" --notice "KSP on Nspire!" --compress
-EXE = kspire
-OBJS = $(patsubst %.c, %.o, $(shell find . -name \*.c))
-OBJS += $(patsubst %.cpp, %.o, $(shell find . -name \*.cpp))
-OBJS += $(patsubst %.S, %.o, $(shell find . -name \*.S))
 
-all: $(EXE).tns
+nspire linux windows:
+	$(MAKE) -f Makefile.$@ $(filter-out $@,$(MAKECMDGOALS))
 
-%.o: %.cpp
-	@echo Compiling $<...
-	@$(GPP) -std=c++23 $(GCCFLAGS) -c $< -o $@
+%:      # thanks to chakrit
+    @:    # thanks to William Pursell
 
-$(EXE).elf: $(OBJS)
-	+$(LD) $^ -o $@ $(GCCFLAGS) $(LDFLAGS)
+.PHONY: linux nspire windows
 
-$(EXE).tns: $(EXE).elf
-	+$(GENZEHN) --input $^ --output $@.zehn $(ZEHNFLAGS)
-	+make-prg $@.zehn $@
-	+rm $@.zehn
-
-.PHONY: clean
-clean:
-	rm -f `find . -name \*.o`
-	rm -f $(EXE).tns $(EXE).elf

@@ -2,12 +2,15 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#ifdef KSPIRE_PLATFORM_NSPIRE //for kspire PC build, always on for demo makefile
 #include <libndls.h>
+#endif
 #include "zlib.h"
 #include "../inc/lodepng/lodepng.h"
 #include "../inc/nGL/gl.h"
 #include "../inc/nGL/texturetools.h"
 #include "../inc/nGL/gldrawarray.h"
+
 namespace angel {
 
     //Texture data object for ngl.

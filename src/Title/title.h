@@ -21,7 +21,7 @@ private:
     //GameTexture tex_buttons; //Sliced to show 3 separate buttons from one image in resources
     ngl_object* obj;
     ngl_object* moon;
-
+    DT clock;
     int select_index = 0;
     bool buttons_wiped = true;
 };

@@ -190,7 +190,7 @@ int PartLoader::load_parts(Bundle* parts) {
         tracked_parts.emplace(raw_parts[i].shared_id, i);
     }
 
-    printf("PartLoader: Added %d parts.\n",tracked_parts.size());
+    printf("PartLoader: Added %d parts.\n",(int)tracked_parts.size());
 
     return 0;
 }
