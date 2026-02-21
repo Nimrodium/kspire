@@ -151,7 +151,7 @@ int scene_pack_menu() {
 
 // get_binary_directory () -> load_asset_bundle ( path ) -> bundle
 // get_binary_directory() -> std::string
-
+#if defined(KSPIRE_PLATFORM_WINDOWS) || defined(KSPIRE_PLATFORM_LINUX)
 char* get_binary_directory(const char* exe_path){
     std::string directory;
     // ./kspire -> prune filename -> ./
@@ -160,6 +160,7 @@ char* get_binary_directory(const char* exe_path){
     std::string parent = p.parent_path().string();
     return strdup(parent.c_str());
 }
+#endif
 
 #if defined(KSPIRE_PLATFORM_WINDOWS) || defined(KSPIRE_PLATFORM_LINUX)
 int main(int argc, char* argv[])
@@ -178,7 +179,7 @@ int main()
         #endif
         if (dir_change_code!=0){
             std::string s = std::format("failed to change to executable directory: {}",directory); 
-            perror(s);
+            printf("%s\n",s.c_str());
         } else{
             printf("changed directory to executable directory %s",directory);
         }
