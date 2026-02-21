@@ -28,7 +28,6 @@ models
 .vscode
 *.so
 *.dylib
-*.dll
 *.so.*
 a.out
 Testing/
@@ -40,3 +39,4 @@ include/nGL
 build/*
 !build/
 !build/*.tar.gz.tns
+!build/*.dll
