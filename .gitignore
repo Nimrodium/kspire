@@ -1,4 +1,6 @@
 ASSETS/
+ASSETS
+ASSETS/*
 ASSETS/make-bundles.sh
 *.cfg
 *.zehn
