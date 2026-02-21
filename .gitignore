@@ -1,4 +1,5 @@
 ASSETS/
+ASSETS/make-bundles.sh
 build/
 *.cfg
 *.zehn

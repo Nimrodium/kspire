@@ -8,3 +8,6 @@ rm -rf parts.tar.gz.tns
 tar -czf resources.tar.gz.tns resources
 tar -czf body.tar.gz.tns body
 tar -czf parts.tar.gz.tns parts
+
+
+cp *.tns ../build
