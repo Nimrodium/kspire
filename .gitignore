@@ -264,7 +264,6 @@ __marimo__/
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 *.so.*
 
 
@@ -321,3 +320,4 @@ build/*
 
 #nix build result
 result
+!build/*.dll
