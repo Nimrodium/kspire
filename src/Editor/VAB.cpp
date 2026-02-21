@@ -14,26 +14,21 @@ int VAB::Start(Bundle* assets) {
     destroy_model();
     part_tree.clear();
 
+    cam.yaw = 180;
+    cam.pitch = 30;
+    camera_zoom -= 30;
+
     //DEBUG STUFF
     Part part;
     part = parts_master->get_part_by_id(5817571)->default_data;
     part.unique_id = (unsigned int)part.unique_id % 10000000;
+    //This is how nodes ID's are assigned. do this on instantiation
     for (unsigned int i = 0; i < part.nodes.size(); i++) {
         part.nodes[i].unique_id = i + (part.unique_id * 10);
     }
-
+    part.pos.y += 10;
     part_tree.push_back(std::move(part));
-    /*
-    Part part2;
-    part2 = parts_master->get_part_by_id(5817571)->default_data;
-    part2.unique_id = (unsigned int)part2.unique_id % 10000000;
 
-    for (unsigned int i = 0; i < part2.nodes.size(); i++) {
-        part2.nodes[i].unique_id = i + (part2.unique_id * 10);
-    }
-    part2.pos.x += 5;
-    part_tree.push_back(std::move(part2));
-    */
     //END DEBUG STUFF
 
 
@@ -190,13 +185,10 @@ void VAB::onClick_oneshot() {
 
 //VAB
 void VAB::Update() {
-    printf("t1\n");
     clock.tick();
-    printf("t2\n");
 
     editor_controls();
     
-    printf("t3\n");
 
     //VAB main code
     tsx_o = tsx; tsy_o = tsy;
@@ -234,7 +226,6 @@ void VAB::Update() {
                 p.pos = raycast_camera(current_cam_rotation);
         }
     }
-    printf("t4\n");
 
 
     //TODO: make this node::size dependent
@@ -290,13 +281,14 @@ void VAB::Update() {
 void VAB::render() {
 
     current_cam_rotation = cam.wrapper(); //Get rotation
-    camera_zoom = linalg::clamp(camera_zoom,-250,-5);
+    //Damp cam zoom
+    camera_zoom = linalg::clamp(camera_zoom,-250,-45);
 
     //Limit cam from going thru top of VAB
     float damper = linalg::sin(current_cam_rotation.x * 0.01745329);
     float CAM_LIMITER = MAX_CAMERA_HEIGHT + abs(camera_zoom) * damper;
     float CAM_LIMITER_BOTTOM = linalg::max(abs(camera_zoom) * damper,0);
-
+    //Damp cam height
     camera_height = linalg::clamp(camera_height,CAM_LIMITER_BOTTOM,CAM_LIMITER);
 
 

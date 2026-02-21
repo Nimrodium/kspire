@@ -43,12 +43,12 @@
 #define K_PAD_NE            SDLK_h
 #define K_PAD_SE            SDLK_h
 #define K_ENTER             SDLK_KP_ENTER
-#define K_EDITOR_DOWN       SDLK_LCTRL
-#define K_EDITOR_UP         SDLK_LSHIFT
+#define K_EDITOR_DOWN       SDLK_q
+#define K_EDITOR_UP         SDLK_e
 #define K_WARP_UP           SDLK_z
 #define K_WARP_DOWN         SDLK_x
-#define K_EDITOR_IN         SDLK_e
-#define K_EDITOR_OUT        SDLK_q
+#define K_EDITOR_IN         SDLK_LSHIFT
+#define K_EDITOR_OUT        SDLK_LCTRL
 #define K_CTRL              SDLK_LCTRL
 #define K_SHIFT             SDLK_LSHIFT
 #define K_DEBUG_SCENE_1     SDLK_1
