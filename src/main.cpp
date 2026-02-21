@@ -140,7 +140,7 @@ int scene_load_menu() {
     title.load_title(&resource_bundle,uni.planetarium.celestials[1].me,uni.planetarium.celestials[2].me);
     loading = false;
     cursor.set_cursor_visibility(false);
-    
+
     return 0;
 }
 
@@ -151,7 +151,7 @@ int scene_pack_menu() {
 
 // get_binary_directory () -> load_asset_bundle ( path ) -> bundle
 // get_binary_directory() -> std::string
-
+#if defined(KSPIRE_PLATFORM_WINDOWS) || defined(KSPIRE_PLATFORM_LINUX)
 char* get_binary_directory(const char* exe_path){
     std::string directory;
     // ./kspire -> prune filename -> ./
@@ -160,6 +160,7 @@ char* get_binary_directory(const char* exe_path){
     std::string parent = p.parent_path().string();
     return strdup(parent.c_str());
 }
+#endif
 
 #if defined(KSPIRE_PLATFORM_WINDOWS) || defined(KSPIRE_PLATFORM_LINUX)
 int main(int argc, char* argv[])
@@ -177,8 +178,8 @@ int main()
             dir_change_code = _chdir(directory);
         #endif
         if (dir_change_code!=0){
-            std::string s = std::format("failed to change to executable directory: {}",directory); 
-            perror(s);
+            std::string s = std::format("failed to change to executable directory: {}",directory);
+            printf("%s\n",s.c_str());
         } else{
             printf("changed directory to executable directory %s",directory);
         }
@@ -198,7 +199,7 @@ int main()
     // Allocate the framebuffer
     screen = newTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 0, false);
     nglSetBuffer(screen->bitmap);
-    vab.screen = screen;    
+    vab.screen = screen;
     title.screen = screen;
 
     //Processed position for nGL
@@ -235,7 +236,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     fonts.drawString("Loading parts...",0xFFFF,*screen,10,220);
     nglDisplay();
-    
+
     //Load part bundle
     if (parts_bundle.load_asset_bundle("parts.tar.gz.tns")) {
         printf("Asset load error!!\n");
@@ -255,10 +256,10 @@ int main()
         printf("Asset load error!!");
         return 1;
     }
-    
+
     if (uni.planetarium.load_celestial_bodies(&resource_bundle)) return 1;
 
-    
+
 
     //vab.hide_vab = true;
     //Debug init scene
@@ -312,7 +313,7 @@ int main()
             scene_load_flight();
         }
 
-        
+
         if (isKeyPressed(K_DEBUG_SCENE_2)  && !loading) {
             switch (current_state) {
                 case GameStates::EDITOR:
@@ -326,7 +327,7 @@ int main()
             scene_load_vab();
         }
 
-        
+
         if (current_state == GameStates::FLIGHT) {
 
             if (uni.focused_vessel != nullptr) {
@@ -336,7 +337,7 @@ int main()
                 ui_altitude.draw(0,0);
                 debug_print("",(int)(uni.universal_time),2,3,screen,"s");
                 debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
-            
+
                 debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
             }
             /*
@@ -353,10 +354,10 @@ int main()
         if (current_state == GameStates::EDITOR) {
 
             vab.Update();
-    
+
         }
         if (current_state == GameStates::MENU) {
-            auto res = title.Update(); 
+            auto res = title.Update();
             if (res == -1) break_game = true;
             if (res == 600) {
                 scene_pack_menu(); scene_load_vab();
@@ -364,7 +365,7 @@ int main()
         }
 
         if (vab.show_pallete || current_state != GameStates::EDITOR) {
-            
+
             #if defined(KSPIRE_PLATFORM_LINUX)
             const char* VERSION = "PC_" BUILD_DATE "_" BUILD_TIME;
             fonts.drawString(VERSION,0xFFFF,*screen,10,220);
@@ -379,7 +380,7 @@ int main()
                 fonts.drawString(VERSION,0xFFFF,*screen,10,220);
             }
             #endif
-            
+
 
         }
 
