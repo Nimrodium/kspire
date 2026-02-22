@@ -48,7 +48,7 @@ void Timewarp_Controller::tick(int cannot_enter_timewarp) {
         is_physics_warp = true;
     }
 
-    //Telegraph
+    //Flag!
     if (up_oneshot && warp_index == 4) entered_rails = true;
     if (down_oneshot && warp_index == 3) exited_rails = true;
 

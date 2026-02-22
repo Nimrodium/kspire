@@ -45,29 +45,39 @@ void Universe::step_rails_orbit_for_v(Vessel* v) {
 }
 void Universe::step_physics_orbit_for_v(Vessel* v) {
     if ( v == nullptr) return;
+    //v->home_body = planetarium.get_attractor(v);
+
+    double calc_mu = planetarium.celestials[v->home_body].mass * 6.6743E-11;
+    v->orbit.mu = calc_mu;
+
     v->orbit.physics_step(clock.dt,timewarp.warp_rate);
-    v->orbit.mu = 3.986004418e14;   //NEED TO GET FOR HOME BODY
 
 }
 
 
 void Universe::Update() {
     clock.tick();
-    cam.camera_controller(Camera::FREE);
+    cam.camera_controller(Camera::ORBIT);
 
     timewarp.tick(0);
     timewarp.lerp_rate(clock.dt);
 
     planetarium.update_planet_positions(universal_time);
 
-
+/*
+    printf("2POS: (%f,%f,%f)\n", focused_vessel->orbit.POS.x/1000.0f, 
+                                 focused_vessel->orbit.POS.y/1000.0f, 
+                                 focused_vessel->orbit.POS.z/1000.0f);
+    printf("2VEL: (%f,%f,%f)\n", focused_vessel->orbit.VEL.x/1000.0f, 
+                                 focused_vessel->orbit.VEL.y/1000.0f, 
+                                 focused_vessel->orbit.VEL.z/1000.0f);
+    printf("2ECC: %f\n",         focused_vessel->orbit.eccentricity);
+*/
     //Rails enter/exit handling
 
     if (timewarp.entered_rails) {
         for (Vessel &v : vessels) {
             if (v.loaded) {
-                
-                printf({"timewarp disabled lol\n"});
                 v.orbit.physics_to_rails(universal_time);
             }
         }
@@ -93,31 +103,39 @@ void Universe::Update() {
 
     //Debug to swap texture of planet
     if(isKeyPressed(K_ENTER)) {
-        if (planetarium.celestials[2].switch_texture("body/luna.png") != 0) {
-            printf("ERROR\n");
-        }
+        focused_vessel->orbit.POS.y += 10000;
     }
+
+
 
     //Step vessel orbits
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated AND LOADED
         if (v.loaded && timewarp.is_physics_warp) {
             step_physics_orbit_for_v(&v);
+
             
         } else {
+            //step_physics_orbit_for_v(&v);
             step_rails_orbit_for_v(&v);
         }
     }
 
+    const double TWO_PI = 2.0 * M_PI;
+    const double RAD_TO_DEG = 57.29578;
 
-
+    //Tesitng
+    //auto im = linalg::normalize(focused_vessel->orbit.POS);
+    //cam.yaw = linalg::atan2(im.x, im.z) * RAD_TO_DEG ;
+ 
     //Deltatime stuff
     cam.dt = clock.dt;
     universal_time += (clock.dt * timewarp.warp_rate);
-
+    
     for (CelestialBody& c : planetarium.celestials) { 
-        c.angle = universal_time / 86400.0*2800;
 
+        double ang = fmod(universal_time / 21549.425 * TWO_PI, TWO_PI);
+        c.angle = ang * RAD_TO_DEG;
     }
 
     //Render
@@ -136,9 +154,14 @@ void Universe::render() {
     glTranslatef(-cam.pos.x, -cam.pos.y, -cam.pos.z);
     //Camera rotation
     
-
     //Gonna have to configulate this for orbit mode
     //camera.cpp has kinda a way to do the auto mode using sub modes.
+    if (cam.mode == Camera::ORBIT) {
+        linalg::vec<float,3> out = cam.wrapper();   //Outputs rpy as actual clamped values good for ngl
+        nglRotateX(out.x);
+        nglRotateZ(out.z);
+        nglRotateY(out.y);
+    }
     if (cam.mode == Camera::FREE) {
         linalg::vec<float,3> out = cam.wrapper();   //Outputs rpy as actual clamped values good for ngl
         nglRotateX(out.x);

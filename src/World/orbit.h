@@ -13,24 +13,26 @@ struct Orbit {
     double semi_minor_axis;
     double semi_latus_rectum;
 
-    double semi_major_axis;
-    double eccentricity;
-    double epoch;
-    double period;
-    double orbital_speed;
-    double inclination;
-    double mean_anomaly;
-    double mean_anomaly_at_epoch;
-    double long_ascending_node;
-    double argument_of_periapsis;
+
+    //STO
+    double semi_major_axis = 0;
+    double eccentricity = 0;
+    double epoch = 0;
+    double inclination = 0;
+    double mean_anomaly = 0;
+    double mean_anomaly_at_epoch = 0;
+    double long_ascending_node = 0;
+    double argument_of_periapsis = 0;
     
+    double period = 0;
+    double orbital_speed = 0;
     double mu = 0;  //transfer mu from parent into here!!
 
     //TESTING: Set vessel starting point. 
 
     //EQUI REFERENCE FRAME TO PARENT BODY
-    linalg::vec<double,3> POS = {0 * 1000, 0 * 1000, -2250 * 1000};    //  m
-    linalg::vec<double,3> VEL = {1 * 1000, 1 * 1000, 1 * 1000};    //  m/s
+    linalg::vec<double,3> POS = {0 * 1000, 3463 * 1000, 0 * 1000};    //  m
+    linalg::vec<double,3> VEL = {-1 * 1000, 0.1 * 1000, 0.1 * 1000};    //  m/s
 
     //Calculate keplarian elements based on input universal time
     void calculate_state_from_keplers(double _UNIVERSAL_TIME);
@@ -45,11 +47,14 @@ private:
     double universal_time;
 
 
-    double solveEccentricAnomaly(double M, double ecc, double maxError);
+    double Ecc_A(double M, double ecc, double maxError);
     //double solveEccentricAnomalyExtremeEcc(double M, double ecc, int iterations = 8);
-    double solveEccentricAnomalyHyp(double M, double ecc, double maxError);
+    double Ecc_A_Hyp(double M, double ecc, double maxError);
 
     void leap_frog(float sdl_dt, float phys_warp_rate);
     linalg::vec<double,3> grav_f();
+
+
+    double h_mag = 0;
 
 };

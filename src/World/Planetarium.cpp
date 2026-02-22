@@ -7,13 +7,13 @@ using namespace rapidjson;
 
 void Planetarium::render_celestials() {
 
-    if (focused_vessel == nullptr) { printf("E 218754: Cannot render planets!\n");return;}
+    if (focused_vessel == nullptr) { printf("E 218754: No Focused Vessel!\n");return;}
     if (celestials.size() == 0) { printf("E 128585: Cannot render planets!\n");return;}
 
     //Should i do distance from CAMERA instead??????
 
     for (CelestialBody& c : celestials) {
-        auto vp = planet_to_universe(focused_vessel->orbit.POS,1);
+        auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
 
         auto pp = planet_to_universe({0,0,0},find_body_by_name(c.name));
 
@@ -41,18 +41,6 @@ void Planetarium::render_celestials() {
         if (mode) {
             //Mode 1 PQS
             printf("Mode 1 not implemented!\n");
-            //Gonna have to gen PQS... UGHHHHHHHHHHHHHHHHHHHHHHHHHH
-
-            /*
-            auto calc_sight = [](float altitude, float radius) {
-                float calc;
-
-                return calc;
-            };
-*/
-            
-
-
 
         } else {
             auto obj = c.me;
@@ -60,14 +48,6 @@ void Planetarium::render_celestials() {
             {
                 //Mode 0 Distant
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
-
-                //The 1 is temporary
-                //auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
-
-                
-                //printf("Dist (m) to %s:%f\n",c.name.c_str(),len);
-                //printf("^ planet X is %f\n",c.orbit.POS.x);
-                //3000 meter bubble
                 float fixed_bubble = 3000;
 
                 glTranslatef(

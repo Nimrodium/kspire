@@ -2,29 +2,52 @@
 
 
 //Newton-Rhapson equation solver
-double Orbit::solveEccentricAnomaly(double M, double ecc, double maxError = 1E-07)
+double Orbit::Ecc_A(double M, double ecc, double maxError = 1E-07)
 {
     double adjust = 1.0;
     double guess = M + ecc * linalg::sin(M) + 0.5 * ecc * ecc * linalg::sin(2.0 * M);
-    while (linalg::abs(adjust) > maxError)
+    int max_iterations = 100;
+    int iterations = 0;
+    while (linalg::abs(adjust) > maxError && iterations < max_iterations)
     {
         double ans = guess - ecc * linalg::sin(guess);
         adjust = (M - ans) / (1.0 - ecc * linalg::cos(guess));
         guess += adjust;
+        iterations++;
+        
+        if (linalg::abs(guess) > 1000.0) {
+            printf("Ecc_A Diverge!\n");
+            return M;
+        }
     }
     return guess;
 }
 
-double Orbit::solveEccentricAnomalyHyp(double M, double ecc, double maxError = 1E-07)
+double Orbit::Ecc_A_Hyp(double M, double ecc, double maxError = 1E-07)
 {
-		double adjust = 1.0;
-		double guess = linalg::log(2.0 * M / ecc + 1.8);
-		while (linalg::abs(adjust) > maxError)
-		{
-			adjust = (eccentricity * linalg::sinh(guess) - guess - M) / (eccentricity * linalg::cosh(guess) - 1.0);
-			guess -= adjust;
-		}
-		return guess;
+    
+	double adjust = 1.0;
+    double guess = linalg::log(2.0 * M / ecc + 1.8);
+
+    int i_max = 100;
+    int i = 0;
+    
+    while (linalg::abs(adjust) > maxError && i < i_max)
+    {
+        double sinh_guess = linalg::sinh(guess);
+        double cosh_guess = linalg::cosh(guess);
+        
+        adjust = (ecc * sinh_guess - guess - M) / (ecc * cosh_guess - 1.0);
+        guess -= adjust;
+        i++;
+
+        if (linalg::abs(guess) > 100.0) {
+            printf("Ecc_A_Hyp Diverge!!!!!\n");
+            break;
+        }
+    }
+    
+    return guess;
 }
 
 
@@ -46,7 +69,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         //if (eccentricity < 1E-05) { printf("ECC edge case\n");}
         //Calc MA
         //mean_anomaly = ObT / period * 2.0 * pi;
-        double n = sqrt(mu / (semi_major_axis*semi_major_axis*semi_major_axis));
+        double n = linalg::sqrt(mu / (semi_major_axis*semi_major_axis*semi_major_axis));
         mean_anomaly = mean_anomaly_at_epoch + n * ObT;
         mean_anomaly = fmod(mean_anomaly, 2.0*pi);
 
@@ -56,14 +79,14 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
             true_anomaly = mean_anomaly;
         } else {    //Noncircular orbits
             if (eccentricity < 0.9) {
-                eccentric_anomaly = solveEccentricAnomaly(mean_anomaly,eccentricity);
+                eccentric_anomaly = Ecc_A(mean_anomaly,eccentricity);
             } else {
                 printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE WITH OTHER FUNC\n");
             }
                 //Calc TA
                 true_anomaly = linalg::atan2(
-                    sqrt(1 - eccentricity*eccentricity) * sin(eccentric_anomaly),
-                    cos(eccentric_anomaly) - eccentricity
+                    linalg::sqrt(1 - eccentricity*eccentricity) * linalg::sin(eccentric_anomaly),
+                    linalg::cos(eccentric_anomaly) - eccentricity
                 );
         }
 
@@ -74,7 +97,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         if (eccentricity == 1.0)    //Turn parabolic orbit edge case into hyperbolic
             eccentricity += 1E-10;
         mean_anomaly = 2.0 * pi * linalg::abs(ObT) / period;
-        eccentric_anomaly = solveEccentricAnomalyHyp(mean_anomaly,eccentricity);
+        eccentric_anomaly = Ecc_A_Hyp(mean_anomaly,eccentricity);
         true_anomaly = linalg::atan2(linalg::sqrt(eccentricity * eccentricity - 1.0) * linalg::sinh(eccentric_anomaly), eccentricity - linalg::cosh(eccentric_anomaly));
 
         radius = (0.0 - semi_major_axis) * (eccentricity * eccentricity - 1.0) / (1.0 + eccentricity * linalg::cos(true_anomaly));
@@ -85,9 +108,9 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         return;
     }
 
-    double h = sqrt(mu * semi_major_axis * (1 - eccentricity*eccentricity));
-    double v_r = mu / h * eccentricity * sin(true_anomaly);
-    double v_theta = mu / h * (1 + eccentricity * cos(true_anomaly));
+    double h = linalg::sqrt(mu * semi_major_axis * (1 - eccentricity*eccentricity));
+    double v_r = mu / h * eccentricity * linalg::sin(true_anomaly);
+    double v_theta = mu / h * (1 + eccentricity * linalg::cos(true_anomaly));
 
     linalg::vec<double,3> r_pf;
     linalg::vec<double,3> v_pf;
@@ -95,15 +118,20 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     //Now convert to perifocal plane
     //Describes a 2D plane along the plane of the orbit
     //POS
-    r_pf.x = radius * cos(true_anomaly);
-    r_pf.y = radius * sin(true_anomaly);
+    r_pf.x = radius * linalg::cos(true_anomaly);
+    r_pf.y = radius * linalg::sin(true_anomaly);
     r_pf.z = 0.0;
 
-    v_pf.x = v_r * cos(true_anomaly) - v_theta * sin(true_anomaly);
-    v_pf.y = v_r * sin(true_anomaly) + v_theta * cos(true_anomaly);
+    //PROPER
+    //vf_vec = np.array([-np.sqrt(mu/p)*np.sin(oe[5]), np.sqrt(mu/p)*(oe[1] + np.cos(oe[5])), 0])
+    v_pf.x = v_r * linalg::cos(true_anomaly) - v_theta * linalg::sin(true_anomaly); //NEGT
+    v_pf.y = v_r * linalg::sin(true_anomaly) + v_theta * linalg::cos(true_anomaly); //POST
     v_pf.z = 0.0;
 
-
+    //Didnt fix
+    //double p = (h_mag*h_mag)/mu ;
+    //v_pf.x = -linalg::sqrt(mu/p)*sin(true_anomaly);
+    //v_pf.y = linalg::sqrt(mu/p)*(eccentricity+cos(true_anomaly));
     //Rotation matrix
     linalg::mat<double,3,3> RM;
 
@@ -111,14 +139,14 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     //Dont forget to make it Y up! if you end up converting to perifocal for some reason!
     //Precompute terms
 
-    double cos_O = cos(long_ascending_node);
-    double sin_O = sin(long_ascending_node);
-    double cos_i = cos(inclination);
-    double sin_i = sin(inclination);
-    double cos_w = cos(argument_of_periapsis);
-    double sin_w = sin(argument_of_periapsis);
+    double cos_O = linalg::cos(long_ascending_node);
+    double sin_O = linalg::sin(long_ascending_node);
+    double cos_i = linalg::cos(inclination);
+    double sin_i = linalg::sin(inclination);
+    double cos_w = linalg::cos(argument_of_periapsis);
+    double sin_w = linalg::sin(argument_of_periapsis);
 
-    // Correct Y-up rotation matrix
+    //Same mat as https://github.com/Keeby-Astro/Space-Sciences-and-Astrodynamics/blob/main/course_scripts/Coordinate%20Transformation.py#L57
     RM[0][0] =  cos_O*cos_w - sin_O*sin_w*cos_i;
     RM[0][1] = -cos_O*sin_w - sin_O*cos_w*cos_i;
     RM[0][2] =  sin_O*sin_i;
@@ -131,19 +159,33 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     RM[2][1] =  cos_w*sin_i;
     RM[2][2] =  cos_i;
 
-
     //Matrix multiplication
-    POS = linalg::mul(RM,r_pf);
-    VEL = linalg::mul(RM,v_pf);
+
+    linalg::vec<double,3> pos_c = linalg::mul(RM, r_pf);
+    linalg::vec<double,3> vel_c = linalg::mul(RM, v_pf);
+
+
+    POS = { pos_c.x, pos_c.y, pos_c.z };
+    VEL = { vel_c.x, vel_c.y, vel_c.z };
+
 }
 
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 //Calculate on-rails orbital elements given keplarian elements
 void Orbit::physics_to_rails(double epoch) {
-    //Y is up Z forward!
-    linalg::vec<double,3> K = {0,1,0};
 
-    if (mu == 0 ) { printf("E 134814: MU NOT SET!!!!\n");}
+//     printf("1POS: (%f,%f,%f)\n", POS.x, POS.y, POS.z);
+// printf("1VEL: (%f,%f,%f)\n", VEL.x, VEL.y, VEL.z);
+// printf("1ECC: %f\n", eccentricity);
+
+
+    //Use return codes later
+    if (mu == 0 ) { printf("E 134814: MU NOT SET!!!!\n"); return;}
+    if (linalg::length(POS) < 1e-10 || linalg::length(VEL) < 1e-10) {
+        printf("E 632131: Bad position or velocity!\n"); return;}
+
+    linalg::vec<double,3> K = {0,0,1};
+
     //Dont use linalg::normalize() to find length.
     double Omega = -1;
     double POS_mag = linalg::length(POS);
@@ -153,11 +195,11 @@ void Orbit::physics_to_rails(double epoch) {
 
     //Angular momentum (h, h_mag)
     linalg::vec<double, 3> h = linalg::cross(POS,VEL);
-    double h_mag = linalg::length(h);
+    h_mag = linalg::length(h);
     
 
     //Inclination
-    double i = linalg::acos(linalg::clamp(linalg::dot(h, K) / h_mag, -1.0, 1.0));
+    double i = linalg::acos(linalg::clamp(h.z / h_mag, -1.0, 1.0));
 
     //Right Ascension @ Ascending Node
     //N=^K x h
@@ -168,81 +210,69 @@ void Orbit::physics_to_rails(double epoch) {
     double n_mag = linalg::length(n);
 
     //LAN (Omega)
-    if (n_mag < 1E-7) {
-        Omega = 0.0;
-    } else {
-        Omega = atan2(n.z, n.x);
-        if (Omega < 0) Omega += 2*pi;
+    // if (n_mag < 1E-7) {
+    //     Omega = 0.0;
+    //     printf("EDGE CASE 524582582524\n");
+    //     //atan2 ey ex ?
+    // } else {
+    //     Omega = atan2(n.y, n.x);
+    //     if (Omega < 0) Omega += 2*pi;
+    // }
+    if (n_mag > 1e-8) {
+        Omega = atan2(n.y, n.x);
+        if (Omega < 0.0) Omega += 2.0 * pi;
     }
 
     //Eccentricity (e, e_mag)
     linalg::vec<double,3> e = (linalg::cross(VEL, h) / mu) - (POS / POS_mag);
     double e_mag = linalg::length(e);
-
+    if (e_mag < 1e-10) {
+        printf("E 167411 : Bad Eccentricity!\n");
+        return;
+    }
 
     //Argument of periapsis (Lowercase omega)
-    double omega = linalg::atan2(linalg::dot(linalg::cross(n, e), h) / h_mag,linalg::dot(n, e));
-    if (omega < 0) omega += 2.0*pi;
+    double omega = -1;
+    if (n_mag > 1e-8 && e_mag > 1e-8) {
+        double cos_omega = linalg::clamp(linalg::dot(n, e) / (n_mag * e_mag), -1.0, 1.0);
+        double sin_omega = linalg::dot(linalg::cross(n, e), h) / (n_mag * e_mag * h_mag);
+        omega = atan2(sin_omega, cos_omega);
+        if (omega < 0.0) omega += 2.0 * pi;
+    } else if (i < 1e-8) { //Pro only edge case
+        omega = atan2(e.y, e.x);
+        if (omega < 0.0) omega += 2.0 * pi;
+    } else if (fabs(i - pi) < 1e-8) { //Retro only edge case
+        omega = atan2(-e.y, -e.x);
+        if (omega < 0.0) omega += 2.0 * pi;
+    }
+
     //True anomaly
-    double ta = linalg::atan2(v_r * h_mag / mu,linalg::dot(e, POS) / e_mag);
-    if (ta < 0) ta += 2.0*pi;
+    double cos_ta = linalg::clamp(linalg::dot(e, POS) / (e_mag * POS_mag), -1.0, 1.0);
+    double sin_ta = (v_r * h_mag) / (mu * e_mag);
+    double ta = atan2(sin_ta, cos_ta);
+    if (ta < 0.0) ta += 2.0 * pi;
 
 
-    double specific_energy = (VEL_mag*VEL_mag)/2.0 - (mu / POS_mag);
+    double specific_energy = 0.5 * VEL_mag * VEL_mag - mu / POS_mag;
     double a = -mu / (2.0 * specific_energy);
     double p = (h_mag * h_mag) / mu;
-    //STO ECC
     eccentricity = e_mag;
-
-    //STO SmA
-    if (eccentricity < 1.0) { //CAnnot be hyperbonlic
-        semi_minor_axis = a * linalg::sqrt(1 - eccentricity*eccentricity);
-    } else {
-        semi_minor_axis = NAN;
-    }
-    //STO SMA
     semi_major_axis = a;
-
-    //STO SLR
+    semi_minor_axis = (eccentricity < 1.0) ? a * sqrt(1.0 - e_mag*e_mag) : NAN;
     semi_latus_rectum = p;
 
-    //STO Epoch
     this->epoch = epoch;
 
-    //STO Period
-    if (eccentricity < 1.0) {
-        period = 2*pi * linalg::sqrt((a*a*a)/mu);
-    } else {
-        period = NAN;
-    }
-
-    //STO Orbital speed
-    orbital_speed = linalg::sqrt(mu * (2.0/POS_mag - 1.0/a)); //Derived from orbital elems
-
-    //STO INC
+    period = (eccentricity < 1.0) ? 2.0 * pi * sqrt(a*a*a / mu) : NAN;
+    orbital_speed = sqrt(mu * (2.0 / POS_mag - 1.0 / a));
     inclination = i;
 
-    //STO MA
-    ///double E = 2.0 * linalg::atan( linalg::tan(ta/2.0) *
-    //linalg::sqrt((1.0 - eccentricity)/(1.0 + eccentricity)));
-    double E = linalg::atan2(
-        linalg::sqrt(1.0 - eccentricity*eccentricity) * linalg::sin(ta),
-        eccentricity + linalg::cos(ta)
-    );
-    
-
-    mean_anomaly = E - eccentricity * linalg::sin(E);
-
-    //STO MA-E
+    double E = atan2(sqrt(1.0 - e_mag*e_mag) * sin(ta), e_mag + cos(ta));
+    mean_anomaly = E - e_mag * sin(E);
     mean_anomaly_at_epoch = mean_anomaly;
 
-    //STO LAN
     long_ascending_node = Omega;
-
-    //STO A_P
     argument_of_periapsis = omega;
-
-
 }
 
 
