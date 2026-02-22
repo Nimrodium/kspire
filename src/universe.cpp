@@ -14,7 +14,9 @@ void Universe::render_nearby_vessels() {
 
             if (parts_master->get_part_by_id(p.shared_id) == nullptr) continue;
             if (parts_master->get_part_by_id(p.shared_id)->models.size() == 0) continue;
-
+            if (parts_master->get_part_by_id(p.shared_id) == nullptr) continue;
+            auto part = parts_master->get_part_by_id(p.shared_id);
+            if (part->models.empty()) continue;
             
             auto obj = parts_master->get_part_by_id(p.shared_id)->models[0]; //Only first object for now
 
@@ -66,16 +68,13 @@ void Universe::Update() {
             if (v.loaded) {
                 
                 printf({"timewarp disabled lol\n"});
-                //v.orbit.physics_to_rails(universal_time);
+                v.orbit.physics_to_rails(universal_time);
             }
         }
     }
     if (timewarp.exited_rails) {
         for (Vessel &v : vessels) {
             if (v.loaded) {
-                //v.physics.POS = v.orbit.POS;
-                //v.physics.VEL = v.orbit.VEL;
-                
                 //Need to do rails to physics
             }
         }
@@ -103,10 +102,10 @@ void Universe::Update() {
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated AND LOADED
         if (v.loaded && timewarp.is_physics_warp) {
-            //step_physics_orbit_for_v(&v);
+            step_physics_orbit_for_v(&v);
             
         } else {
-            //step_rails_orbit_for_v(&v);
+            step_rails_orbit_for_v(&v);
         }
     }
 

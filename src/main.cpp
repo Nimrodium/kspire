@@ -341,10 +341,6 @@ int main()
                 debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
 
 
-                int attr = uni.planetarium.get_attractor(uni.focused_vessel);
-                
-                printf("attractor is : %d\n",attr);
-
             }
 
             

@@ -76,14 +76,13 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         mean_anomaly = 2.0 * pi * linalg::abs(ObT) / period;
         eccentric_anomaly = solveEccentricAnomalyHyp(mean_anomaly,eccentricity);
         true_anomaly = linalg::atan2(linalg::sqrt(eccentricity * eccentricity - 1.0) * linalg::sinh(eccentric_anomaly), eccentricity - linalg::cosh(eccentric_anomaly));
-        if (ObT < 2.0) {
-            true_anomaly = pi * 2 - true_anomaly;
-        }
+
         radius = (0.0 - semi_major_axis) * (eccentricity * eccentricity - 1.0) / (1.0 + eccentricity * linalg::cos(true_anomaly));
     }
 
     if (radius < 0) {
         printf("E 128385 : Something went terribly wrong %f\n",eccentricity);
+        return;
     }
 
     double h = sqrt(mu * semi_major_axis * (1 - eccentricity*eccentricity));
@@ -111,6 +110,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     //https://en.wikipedia.org/wiki/Perifocal_coordinate_system
     //Dont forget to make it Y up! if you end up converting to perifocal for some reason!
     //Precompute terms
+
     double cos_O = cos(long_ascending_node);
     double sin_O = sin(long_ascending_node);
     double cos_i = cos(inclination);
@@ -118,19 +118,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
     double cos_w = cos(argument_of_periapsis);
     double sin_w = sin(argument_of_periapsis);
 
-    // RM[0][0] = -sin_O*cos_i*cos_w + sin_O*sin_w;
-    // RM[0][1] = sin_i*sin_w;
-    // RM[0][2] = cos_O*cos_w + sin_O*cos_i*sin_w;
-
-    // RM[1][0] = -cos_O*cos_i*cos_w - sin_O*sin_w;
-    // RM[1][1] = sin_i*cos_w;
-    // RM[1][2] = sin_O*cos_w - cos_O*cos_i*sin_w;
-
-    // RM[2][0] = sin_i*sin_w;
-    // RM[2][1] = cos_i;
-    // RM[2][2] = sin_i*cos_w;
-
-
+    // Correct Y-up rotation matrix
     RM[0][0] =  cos_O*cos_w - sin_O*sin_w*cos_i;
     RM[0][1] = -cos_O*sin_w - sin_O*cos_w*cos_i;
     RM[0][2] =  sin_O*sin_i;
