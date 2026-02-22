@@ -263,8 +263,8 @@ int main()
 
     //vab.hide_vab = true;
     //Debug init scene
-    scene_load_menu();
-    //scene_load_flight();
+    //scene_load_menu();
+    scene_load_flight();
     //scene_load_vab();
 
 
@@ -339,7 +339,15 @@ int main()
                 debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
             
                 debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+
+
+                int attr = uni.planetarium.get_attractor(uni.focused_vessel);
+                
+                printf("attractor is : %d\n",attr);
+
             }
+
+            
             /*
             debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
             debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);

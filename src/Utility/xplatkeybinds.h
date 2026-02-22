@@ -42,7 +42,7 @@
 #define K_PAD_SW            SDLK_h
 #define K_PAD_NE            SDLK_h
 #define K_PAD_SE            SDLK_h
-#define K_ENTER             SDLK_KP_ENTER
+#define K_ENTER             SDLK_RETURN
 #define K_EDITOR_DOWN       SDLK_q
 #define K_EDITOR_UP         SDLK_e
 #define K_WARP_UP           SDLK_z

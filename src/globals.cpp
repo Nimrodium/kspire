@@ -9,10 +9,9 @@ SDL_Event sdl_event;
 
 
 
-bool isKeyPressed(unsigned int key) {
+bool isKeyPressed(unsigned int key) {    
     Uint8 *state = SDL_GetKeyState(NULL);
     return state[key];
-    return false;
 }
 
 touchpad_report_t touchpad_scan(touchpad_report_t *tp) {

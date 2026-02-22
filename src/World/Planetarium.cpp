@@ -160,22 +160,21 @@ double Planetarium::get_soi(int index) {
 
 //Find closest attractor to a vessel
 int Planetarium::get_attractor(Vessel *v) {
-    int best = 0;
-    double lowest = INFINITY;
-    int i = 0;
-    for (CelestialBody &c : celestials) {
-        printf("THIS IS NOT WORKING YET!! USE C!! %s, %f\n",c.name.c_str(),v->orbit.epoch);
-        double soi = get_soi(i);
-        //HOW TO FIND THIS???
-        double distance_to_planet = 67000;
-        //Golf
-        double ans = distance_to_planet / soi;
-        if (ans < lowest) {
-            best = i;
-            lowest = ans;
-        }
+    int best = -1;
+    double best_score = INFINITY;
 
-        i++;
+    for (size_t i = 0; i < celestials.size(); ++i) {
+        const CelestialBody& c = celestials[i];
+        if (c.parent.empty()) continue; //Sun
+
+        double dist_to_planet = linalg::length(v->orbit.POS - c.orbit.POS);
+        double soi = get_soi(static_cast<int>(i));
+        double score = dist_to_planet / soi;
+
+        if (score < best_score) {
+            best_score = score;
+            best = static_cast<int>(i);
+        }
     }
     return best;
 }
