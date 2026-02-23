@@ -350,9 +350,9 @@ int main()
                 screen_print("",(int)(uni.universal_time),2,3,screen,"s");
                 screen_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
             
-                screen_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+                screen_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),100,220,screen);
 
-
+                /*
                 //Navball
                 {
                     nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_ORTHOGRAPHIC);
@@ -386,9 +386,12 @@ int main()
                     );
 
                     auto stuff = uni.cam.wrapper();
-                    nglRotateX((float)fmod(stuff.x+90,360.0f));
-                    nglRotateZ((float)fmod(stuff.y,360.0f));
-        
+                    auto ang = linalg::atan2(uni.focused_vessel->orbit.POS.y,uni.focused_vessel->orbit.POS.x) * 57.29f;
+                    if (ang < 0) ang = 360.0f - ang;
+                    nglRotateX((float)fmod(ang,360.0f));
+                    nglRotateZ((float)fmod(ang,360.0f));
+                    nglRotateY(270);
+
                     glScale3f(37,37,37);
                     glBindTexture(obj->texture);
                     nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
@@ -397,7 +400,7 @@ int main()
                     //projection_mode = GLProjectionMode::GL_PROJECTION_PERSPECTIVE;
                     nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_PERSPECTIVE);
 
-                }
+                }*/
 
 
             }

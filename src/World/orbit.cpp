@@ -81,7 +81,8 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
             if (eccentricity < 0.9) {
                 eccentric_anomaly = Ecc_A(mean_anomaly,eccentricity);
             } else {
-                printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE WITH OTHER FUNC\n");
+                
+                //printf("ECC TOO HIGHH!!! SOLVE EXTREME CASE WITH OTHER FUNC\n");
             }
                 //Calc TA
                 true_anomaly = linalg::atan2(
@@ -170,6 +171,7 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
 
 }
 
+//https://github.com/atichat45/orbital-mechanics-toolkit/blob/main/src/orbital_mechanics/core/orbital_elements.py
 //https://orbital-mechanics.space/classical-orbital-elements/orbital-elements-and-the-state-vector.html
 //Calculate on-rails orbital elements given keplarian elements
 void Orbit::physics_to_rails(double epoch) {
@@ -184,19 +186,20 @@ void Orbit::physics_to_rails(double epoch) {
     if (linalg::length(POS) < 1e-10 || linalg::length(VEL) < 1e-10) {
         printf("E 632131: Bad position or velocity!\n"); return;}
 
-    linalg::vec<double,3> K = {0,0,1};
+    
 
     //Dont use linalg::normalize() to find length.
     double Omega = -1;
     double POS_mag = linalg::length(POS);
     double VEL_mag = linalg::length(VEL);
-    double v_r = linalg::dot(POS, VEL) / POS_mag; //radial velocity
+    //double v_r = linalg::dot(POS, VEL) / POS_mag; //radial velocity
     //double v_p = linalg::sqrt((VEL_mag*VEL_mag) - (v_r*v_r));   //azimuthal velocity
 
+    
     //Angular momentum (h, h_mag)
     linalg::vec<double, 3> h = linalg::cross(POS,VEL);
     h_mag = linalg::length(h);
-    
+   
 
     //Inclination
     double i = linalg::acos(linalg::clamp(h.z / h_mag, -1.0, 1.0));
@@ -204,27 +207,27 @@ void Orbit::physics_to_rails(double epoch) {
     //Right Ascension @ Ascending Node
     //N=^K x h
     
-
+    linalg::vec<double,3> K = {0,0,1};
     //Node line (n, n_mag)
     linalg::vec<double,3> n = linalg::cross(K, h);
     double n_mag = linalg::length(n);
 
-    //LAN (Omega)
-    // if (n_mag < 1E-7) {
-    //     Omega = 0.0;
-    //     printf("EDGE CASE 524582582524\n");
-    //     //atan2 ey ex ?
-    // } else {
-    //     Omega = atan2(n.y, n.x);
-    //     if (Omega < 0) Omega += 2*pi;
-    // }
     if (n_mag > 1e-8) {
-        Omega = atan2(n.y, n.x);
-        if (Omega < 0.0) Omega += 2.0 * pi;
+        //printf("MAG\n");
+        //Omega = atan2(n.y, n.x);
+        Omega = 0.0f; //equitorial orbit
+    } else {
+        Omega = linalg::acos(n.x/n_mag);
+        if (n.y < 0) {
+            Omega = 2 * pi - Omega;
+        }
     }
 
+    
     //Eccentricity (e, e_mag)
-    linalg::vec<double,3> e = (linalg::cross(VEL, h) / mu) - (POS / POS_mag);
+//    linalg::vec<double,3> e = (linalg::cross(VEL, h) / mu) - (POS / POS_mag);
+    linalg::vec<double,3> e = (((VEL_mag*VEL_mag) - mu/POS_mag) * POS
+    - linalg::dot(POS,VEL) * VEL) / mu;
     double e_mag = linalg::length(e);
     if (e_mag < 1e-10) {
         printf("E 167411 : Bad Eccentricity!\n");
@@ -233,28 +236,56 @@ void Orbit::physics_to_rails(double epoch) {
 
     //Argument of periapsis (Lowercase omega)
     double omega = -1;
-    if (n_mag > 1e-8 && e_mag > 1e-8) {
-        double cos_omega = linalg::clamp(linalg::dot(n, e) / (n_mag * e_mag), -1.0, 1.0);
-        double sin_omega = linalg::dot(linalg::cross(n, e), h) / (n_mag * e_mag * h_mag);
-        omega = atan2(sin_omega, cos_omega);
-        if (omega < 0.0) omega += 2.0 * pi;
-    } else if (i < 1e-8) { //Pro only edge case
-        omega = atan2(e.y, e.x);
-        if (omega < 0.0) omega += 2.0 * pi;
-    } else if (fabs(i - pi) < 1e-8) { //Retro only edge case
-        omega = atan2(-e.y, -e.x);
-        if (omega < 0.0) omega += 2.0 * pi;
+
+    if (n_mag < 1e-10) {
+        omega = linalg::atan2(e.y,e.x);
+    } else {
+        omega = linalg::acos(linalg::dot(n,e) / (n_mag * e_mag));
+        if (e.z < 0) {
+            omega = 2 * pi - omega;
+        }
     }
 
     //True anomaly
-    double cos_ta = linalg::clamp(linalg::dot(e, POS) / (e_mag * POS_mag), -1.0, 1.0);
-    double sin_ta = (v_r * h_mag) / (mu * e_mag);
-    double ta = atan2(sin_ta, cos_ta);
-    if (ta < 0.0) ta += 2.0 * pi;
+    //double cos_ta = linalg::clamp(linalg::dot(e, POS) / (e_mag * POS_mag), -1.0, 1.0);
+    //double sin_ta = (v_r * h_mag) / (mu * e_mag);
+    
+    //double ta = atan2(sin_ta, cos_ta);
+    
+    //if (ta < 0.0) ta += 2.0 * pi;
+    double ta = 1;
+    if (e_mag < 1e-8) {
+        if (n_mag < 1e-8) {
+            ta = linalg::atan2(POS.y,POS.x);
+        } else {
+            ta = linalg::acos(linalg::dot(n,POS) / (n_mag / POS_mag));
+            if (linalg::dot(n,POS) < 0 || linalg::dot(linalg::cross(n,POS),h) < 0) {
+                ta = 2 * pi - ta;
+            }
+        }
+    } else {
+        ta = linalg::acos(linalg::dot(e,POS) / (e_mag * POS_mag));
+        if (linalg::dot(POS,VEL) < 0) {
+            ta = 2 * pi - ta;
+        }
+    }
+
+    //double specific_energy = 0.5 * VEL_mag * VEL_mag - mu / POS_mag;
+
+    //Semi major axis
+    //double a = -mu / (2.0 * specific_energy);
+    double a = -1;
+    if (linalg::abs(e_mag - 1.0f) < 1e-8) {
+        a = 57;
+    } else {
+        a = (h_mag*h_mag) / (mu * (1 - (e_mag*e_mag)));
+    }
+    
+
+    printf("A  %fkm\n",a/1000);
+    printf("Em %f\n",e_mag);
 
 
-    double specific_energy = 0.5 * VEL_mag * VEL_mag - mu / POS_mag;
-    double a = -mu / (2.0 * specific_energy);
     double p = (h_mag * h_mag) / mu;
     eccentricity = e_mag;
     semi_major_axis = a;
@@ -264,15 +295,17 @@ void Orbit::physics_to_rails(double epoch) {
     this->epoch = epoch;
 
     period = (eccentricity < 1.0) ? 2.0 * pi * sqrt(a*a*a / mu) : NAN;
-    orbital_speed = sqrt(mu * (2.0 / POS_mag - 1.0 / a));
-    inclination = i;
+    //orbital_speed = sqrt(mu * (2.0 / POS_mag - 1.0 / a));
 
+    inclination = i;
+    
     double E = atan2(sqrt(1.0 - e_mag*e_mag) * sin(ta), e_mag + cos(ta));
     mean_anomaly = E - e_mag * sin(E);
     mean_anomaly_at_epoch = mean_anomaly;
 
     long_ascending_node = Omega;
     argument_of_periapsis = omega;
+
 }
 
 

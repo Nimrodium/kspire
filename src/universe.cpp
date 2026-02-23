@@ -64,8 +64,7 @@ void Universe::Update() {
 
     planetarium.update_planet_positions(universal_time);
 
-/*
-    printf("2POS: (%f,%f,%f)\n", focused_vessel->orbit.POS.x/1000.0f, 
+/*    printf("2POS: (%f,%f,%f)\n", focused_vessel->orbit.POS.x/1000.0f, 
                                  focused_vessel->orbit.POS.y/1000.0f, 
                                  focused_vessel->orbit.POS.z/1000.0f);
     printf("2VEL: (%f,%f,%f)\n", focused_vessel->orbit.VEL.x/1000.0f, 
@@ -73,12 +72,14 @@ void Universe::Update() {
                                  focused_vessel->orbit.VEL.z/1000.0f);
     printf("2ECC: %f\n",         focused_vessel->orbit.eccentricity);
 */
+
     //Rails enter/exit handling
 
     if (timewarp.entered_rails) {
         for (Vessel &v : vessels) {
             if (v.loaded) {
                 v.orbit.physics_to_rails(universal_time);
+                
             }
         }
     }
@@ -117,7 +118,10 @@ void Universe::Update() {
             
         } else {
             //step_physics_orbit_for_v(&v);
+            //printf("IN\n");
             step_rails_orbit_for_v(&v);
+            //            printf("OUT\n");
+
         }
     }
 
