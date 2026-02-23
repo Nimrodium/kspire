@@ -239,12 +239,21 @@ void VAB::Update() {
         num /= 16;
         page_index = num;
         page_index = 11-linalg::clamp(page_index,0,11);
+        //Restrict cursor to highest page? ehh feature. COSMETIC
+        page_index = linalg::min((int)page_index,(int)parts_master->list_categories.size()-1);
     }
     if (m_moved && tsx > 16 && tsx < 115 && tsy < 200) {
         int col = (tsx - 20) / 32;
         int row = ((210-tsy) - 12) / 32;
         if (row > 5) row = 5;
         part_sel_index = row * 3 + col;
+        int max_part_index = 0;
+        //Restrict cursor to highest categ part? ehh feature. COSMETIC
+        if ((unsigned int)page_index < parts_master->list_categories.size() && page_index >= 0)
+            max_part_index = (int)parts_master->get_parts_of_category(parts_master->list_categories[page_index]).size()-1;
+        if (max_part_index < 0) max_part_index = 0;
+        part_sel_index = linalg::min((int)part_sel_index,max_part_index);
+        printf("MAX %d\n",max_part_index);
     }
 
 
