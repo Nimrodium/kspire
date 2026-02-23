@@ -391,7 +391,7 @@ int main()
                 //printf("%s\n",cat_list[vab.page_index].c_str());
                 fonts.drawStringCenter(cat_list[vab.page_index].c_str(),
             0xFFFF, *screen,
-            70,-1);
+            67,-1);
 
             }
             
