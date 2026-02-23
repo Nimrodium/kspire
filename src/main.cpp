@@ -84,9 +84,11 @@ int scene_load_flight() {
 
     scene_pack_flight();
 
+    uni.skybox.load_group(&resource_bundle,"resources/skybox/skybox");
+
     uni.planetarium.clear_celestial_models();
     uni.planetarium.load_celestial_bodies(&resource_bundle);
-
+    printf("LOADED CELESTIALS\n");
     //Only using earth moon and sun right now
     uni.planetarium.celestials[0].load_model(&planet_bundle);
     uni.planetarium.celestials[1].load_model(&planet_bundle);
@@ -268,11 +270,21 @@ int main()
     scene_load_vab();
 
 
+    //Test navball
+    ModelGroup nav;
+    nav.load_group(&resource_bundle,"resources/ui/navball");
+
+    printf("LNAV\n");
+
+
     //Move this please!!! u toopid
     GameTexture ui_altitude;
 
     ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
     ui_altitude.tex.transparent_color = 0x00;
+
+    printf("LALT\n");
+
 
     #ifdef KSPIRE_PLATFORM_NSPIRE
     while(!isKeyPressed(K_ESC) && break_game == 0)
@@ -339,6 +351,53 @@ int main()
                 screen_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
             
                 screen_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+
+
+                //Navball
+                {
+                    nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_ORTHOGRAPHIC);
+
+                    glClear(GL_DEPTH_BUFFER_BIT);
+                    glPushMatrix();
+                    //Test if navball exists...
+                    //Grrrr
+
+                    //NAVBALL CASE
+                    auto obj = &nav.objects[0];
+
+                    glTranslatef(
+                        280,200,
+                        500
+                    );
+
+                    glScale3f(35,35,35);
+                    glBindTexture(obj->texture);
+                    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+                    glPopMatrix();
+                    glPushMatrix();
+
+                    glClear(GL_DEPTH_BUFFER_BIT);
+                    //NAVBALL
+                    obj = &nav.objects[1];
+
+                    glTranslatef(
+                        280,200,
+                        280
+                    );
+
+                    auto stuff = uni.cam.wrapper();
+                    nglRotateX((float)fmod(stuff.x+90,360.0f));
+                    nglRotateZ((float)fmod(stuff.y,360.0f));
+        
+                    glScale3f(37,37,37);
+                    glBindTexture(obj->texture);
+                    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+
+                    glPopMatrix();
+                    //projection_mode = GLProjectionMode::GL_PROJECTION_PERSPECTIVE;
+                    nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_PERSPECTIVE);
+
+                }
 
 
             }

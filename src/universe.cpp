@@ -121,6 +121,9 @@ void Universe::Update() {
         }
     }
 
+    #ifndef M_PI
+    const double M_PI = 3.14159265;
+    #endif
     const double TWO_PI = 2.0 * M_PI;
     const double RAD_TO_DEG = 57.29578;
 
@@ -145,6 +148,32 @@ void Universe::Update() {
 void Universe::render() {
     glColor3f(0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    //IN SKYBOx
+    glPushMatrix();
+    glTranslatef(0,0,0);
+    if (cam.mode == Camera::ORBIT) {
+        linalg::vec<float,3> out = cam.wrapper();   //Outputs rpy as actual clamped values good for ngl
+        nglRotateX(out.x);
+        nglRotateZ(out.z);
+        nglRotateY(out.y);
+    }
+    if (cam.mode == Camera::FREE) {
+        linalg::vec<float,3> out = cam.wrapper();   //Outputs rpy as actual clamped values good for ngl
+        nglRotateX(out.x);
+        nglRotateY(out.y);
+        nglRotateZ(out.z);
+    }
+    glScale3f(500,500,500);
+    auto obj = &skybox.objects[0];
+    glBindTexture(obj->texture);
+    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+    
+
+    glPopMatrix();
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     //IN CAM
     glPushMatrix();
     //Move back
@@ -169,6 +198,7 @@ void Universe::render() {
         nglRotateZ(out.z);
     }
 
+
     planetarium.render_celestials();
 
     render_nearby_vessels();
@@ -181,6 +211,7 @@ void Universe::render() {
 //Pack away the flight scene
 void Universe::pack() {
     planetarium.clear_celestial_models();
+    skybox.free_group();
 
     vessels.clear();
 

@@ -304,7 +304,7 @@ int Planetarium::load_celestial_bodies(Bundle* resources) {
         printf("Added body %s.\n",cb.name.c_str());
 
     }
-
+    
     //Set mu of each body
     for (CelestialBody &c : celestials) {
         if (c.parent == "") continue;

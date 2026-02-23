@@ -18,6 +18,9 @@ class Universe {
 
     Timewarp_Controller timewarp;
     
+
+    ModelGroup skybox;
+
     //Physics range things
     Flight flight;
     Camera cam;
