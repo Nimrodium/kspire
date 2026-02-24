@@ -109,13 +109,14 @@ void Orbit::calculate_state_from_keplers(double _UNIVERSAL_TIME) {
         return;
     }
 
+    linalg::vec<double,3> r_pf;
+    linalg::vec<double,3> v_pf;
+
     double h = linalg::sqrt(mu * semi_major_axis * (1 - eccentricity*eccentricity));
     double v_r = mu / h * eccentricity * linalg::sin(true_anomaly);
     double v_theta = mu / h * (1 + eccentricity * linalg::cos(true_anomaly));
 
-    linalg::vec<double,3> r_pf;
-    linalg::vec<double,3> v_pf;
-
+    
     //Now convert to perifocal plane
     //Describes a 2D plane along the plane of the orbit
     //POS

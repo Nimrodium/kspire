@@ -31,8 +31,8 @@ struct Orbit {
     //TESTING: Set vessel starting point. 
 
     //EQUI REFERENCE FRAME TO PARENT BODY
-    linalg::vec<double,3> POS = {0 * 1000, 3463 * 1000, 0 * 1000};    //  m
-    linalg::vec<double,3> VEL = {-1 * 1000, 0.1 * 1000, 0.1 * 1000};    //  m/s
+    linalg::vec<double,3> POS = {100 * 1000, 3463 * 1000, 0 * 1000};    //  m
+    linalg::vec<double,3> VEL = {-1 * 1000, 0.5 * 1000, 0.1 * 1000};    //  m/s
 
     //Calculate keplarian elements based on input universal time
     void calculate_state_from_keplers(double _UNIVERSAL_TIME);

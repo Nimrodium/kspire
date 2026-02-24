@@ -127,13 +127,13 @@ void Universe::Update() {
         //o->calculate_state_from_keplers(0);
     }
     if (isKeyPressed(K_CTRL)) {
-        focused_vessel->orbit.VEL.x += 10;
+        focused_vessel->orbit.inclination = 45;
     }
 
 
     printf("eph: %f\n",focused_vessel->orbit.epoch);
     printf("ecc: %f\n",focused_vessel->orbit.eccentricity);
-    printf("inc: %f\n",focused_vessel->orbit.inclination);
+    printf("incD: %f\n",focused_vessel->orbit.inclination * 57.29);
     printf("lan: %f\n",focused_vessel->orbit.long_ascending_node);
     printf("ma : %f\n",focused_vessel->orbit.mean_anomaly);
     printf("mae : %f\n",focused_vessel->orbit.mean_anomaly_at_epoch);
@@ -156,11 +156,11 @@ if(isKeyPressed(K_EDITOR_DOWN)) {
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated AND LOADED
         if (v.loaded && timewarp.is_physics_warp) {
-            //step_physics_orbit_for_v(&v);
+            step_physics_orbit_for_v(&v);
             
             
         } else {
-            //step_physics_orbit_for_v(&v);
+            step_physics_orbit_for_v(&v);
             //printf("IN\n");
             //step_rails_orbit_for_v(&v);
             //            printf("OUT\n");
