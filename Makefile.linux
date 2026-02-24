@@ -9,6 +9,7 @@ SRCS = $(wildcard $(SRC)/*.cpp)
 OBJS = $(patsubst %.c, %.o, $(shell find . -name \*.c))
 OBJS += $(patsubst %.cpp, %.o, $(shell find . -name \*.cpp))
 OBJS += $(patsubst %.S, %.o, $(shell find . -name \*.S))
+SRCOBJS = $(patsubst %.S, %.o, $(shell find src/ -name \*.o))
 PLATFORM = -DKSPIRE_PLATFORM_LINUX=1
 CXXFLAGS += $(PLATFORM)
 
@@ -26,3 +27,6 @@ run: build
 clean:
 	@rm -rf $(OUT)/$(EXE)
 	@rm -rf $(OBJS)
+semiclean:
+	@rm -rf $(OUT)/$(EXE)
+	@rm -rf $(SRCOBJS)

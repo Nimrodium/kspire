@@ -189,7 +189,10 @@ void Orbit::physics_to_rails(double epoch) {
     
 
     //Dont use linalg::normalize() to find length.
-    double Omega = -1;
+
+    double Omega = 0;
+    double omega = 0;
+    double ta = 0;
     double POS_mag = linalg::length(POS);
     double VEL_mag = linalg::length(VEL);
     //double v_r = linalg::dot(POS, VEL) / POS_mag; //radial velocity
@@ -212,22 +215,22 @@ void Orbit::physics_to_rails(double epoch) {
     linalg::vec<double,3> n = linalg::cross(K, h);
     double n_mag = linalg::length(n);
 
-    if (n_mag > 1e-8) {
+    if (n_mag < 1e-8) {
         //printf("MAG\n");
         //Omega = atan2(n.y, n.x);
         Omega = 0.0f; //equitorial orbit
     } else {
-        Omega = linalg::acos(n.x/n_mag);
-        if (n.y < 0) {
-            Omega = 2 * pi - Omega;
-        }
+        Omega = linalg::atan2(n.y, n.x);
+        if (Omega < 0) Omega += 2*pi;
     }
 
     
     //Eccentricity (e, e_mag)
-//    linalg::vec<double,3> e = (linalg::cross(VEL, h) / mu) - (POS / POS_mag);
-    linalg::vec<double,3> e = (((VEL_mag*VEL_mag) - mu/POS_mag) * POS
-    - linalg::dot(POS,VEL) * VEL) / mu;
+    //    linalg::vec<double,3> e = (linalg::cross(VEL, h) / mu) - (POS / POS_mag);
+    linalg::vec<double,3> e = (
+        ((VEL_mag*VEL_mag - mu/POS_mag) * POS)
+    - (linalg::dot(POS, VEL) * VEL)
+    ) / mu;
     double e_mag = linalg::length(e);
     if (e_mag < 1e-10) {
         printf("E 167411 : Bad Eccentricity!\n");
@@ -237,15 +240,15 @@ void Orbit::physics_to_rails(double epoch) {
 
     //MIGHT BE AT FAULT
     //Argument of periapsis (Lowercase omega)
-    double omega = -1;
-
+    
     if (n_mag < 1e-10) {
-        omega = linalg::atan2(e.y,e.x);
+    omega = linalg::atan2(e.y, e.x);
     } else {
-        omega = linalg::acos(linalg::dot(n,e) / (n_mag * e_mag));
-        if (e.z < 0) {
-            omega = 2 * pi - omega;
-        }
+        double sin_omega = linalg::dot(linalg::cross(n, e), h) / (n_mag * e_mag * h_mag);
+        double cos_omega = linalg::dot(n, e) / (n_mag * e_mag);
+
+        omega = linalg::atan2(sin_omega, cos_omega);
+        if (omega < 0) omega += 2*pi;
     }
 
     //True anomaly
@@ -255,15 +258,16 @@ void Orbit::physics_to_rails(double epoch) {
     //double ta = atan2(sin_ta, cos_ta);
     
     //if (ta < 0.0) ta += 2.0 * pi;
-    double ta = 1;
+    
     if (e_mag < 1e-8) {
         if (n_mag < 1e-8) {
             ta = linalg::atan2(POS.y,POS.x);
         } else {
-            ta = linalg::acos(linalg::dot(n,POS) / (n_mag / POS_mag));
-            if (linalg::dot(n,POS) < 0 || linalg::dot(linalg::cross(n,POS),h) < 0) {
-                ta = 2 * pi - ta;
-            }
+            double sin_ta = linalg::dot(linalg::cross(e, POS), h) / (e_mag * POS_mag * h_mag);
+            double cos_ta = linalg::dot(e, POS) / (e_mag * POS_mag);
+
+            ta = linalg::atan2(sin_ta, cos_ta);
+            if (ta < 0) ta += 2*pi;
         }
     } else {
         ta = linalg::acos(linalg::dot(e,POS) / (e_mag * POS_mag));
@@ -278,12 +282,15 @@ void Orbit::physics_to_rails(double epoch) {
     //double a = -mu / (2.0 * specific_energy);
     double a = -1;
     if (linalg::abs(e_mag - 1.0f) < 1e-8) {
-        a = 57;
+        a = INFINITY;
     } else {
         a = (h_mag*h_mag) / (mu * (1 - (e_mag*e_mag)));
     }
     
 
+    
+
+    
     double p = (h_mag * h_mag) / mu;
     eccentricity = e_mag;
     semi_major_axis = a;
@@ -339,7 +346,7 @@ void Orbit::leap_frog(float sdl_dt, float phys_warp_rate) {
     //Accumulation maybe?
     for (int phys_step_count = 0; phys_step_count < phys_warp_rate; phys_step_count++) {
         linalg::vec<double,3> acc_curr;
-        float ddt = (float) sdl_dt;
+        float ddt = sdl_dt;
 
         //Current time sep acceleration
         acc_curr = grav_f(); 

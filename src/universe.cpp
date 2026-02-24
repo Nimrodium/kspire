@@ -51,7 +51,8 @@ void Universe::step_physics_orbit_for_v(Vessel* v) {
     v->orbit.mu = calc_mu;
 
     v->orbit.physics_step(clock.dt,timewarp.warp_rate);
-
+    //v->orbit.physics_to_rails(universal_time);
+    //v->orbit.calculate_state_from_keplers(universal_time);
 }
 
 
@@ -61,6 +62,10 @@ void Universe::Update() {
 
     timewarp.tick(0);
     timewarp.lerp_rate(clock.dt);
+
+    //Deltatime stuff
+    cam.dt = clock.dt;
+    universal_time += (clock.dt * timewarp.warp_rate);
 
     planetarium.update_planet_positions(universal_time);
 
@@ -79,9 +84,10 @@ void Universe::Update() {
         for (Vessel &v : vessels) {
             if (v.loaded) {
                 v.orbit.physics_to_rails(universal_time);
-                
+                //v.orbit.calculate_state_from_keplers(universal_time);
             }
         }
+        timewarp.entered_rails = false;
     }
     if (timewarp.exited_rails) {
         for (Vessel &v : vessels) {
@@ -89,7 +95,7 @@ void Universe::Update() {
                 //Need to do rails to physics (no)
             }
         }
-
+        timewarp.exited_rails = true;
     }
 
     //Update focused vessel, in case # of vessels changes. Avoids std::vector fuckery messing with the pointer i think?
@@ -104,8 +110,13 @@ void Universe::Update() {
 
     //Debug to swap texture of planet
     if(isKeyPressed(K_ENTER)) {
-        Orbit* o = &focused_vessel->orbit;
-        o->physics_to_rails(universal_time);
+        for (Vessel &v : vessels) {
+            if (v.loaded) {
+                v.orbit.physics_to_rails(universal_time);
+                //v.orbit.calculate_state_from_keplers(universal_time);
+            }
+        }
+        //o->calculate_state_from_keplers(universal_time);
         //o->epoch = 0;
         //o->eccentricity = 0.001;
         //o->inclination = 0.01f;
@@ -119,26 +130,39 @@ void Universe::Update() {
         focused_vessel->orbit.VEL.x += 10;
     }
 
-//
-//    printf("eph: %f\n",focused_vessel->orbit.epoch);
-//    printf("ecc: %f\n",focused_vessel->orbit.eccentricity);
-//    printf("inc: %f\n",focused_vessel->orbit.inclination);
-//    printf("lan: %f\n",focused_vessel->orbit.long_ascending_node);
-//    printf("ma : %f\n",focused_vessel->orbit.mean_anomaly);
-//    printf("mae : %f\n",focused_vessel->orbit.mean_anomaly_at_epoch);
-//    printf("aop : %f\n",focused_vessel->orbit.argument_of_periapsis);
-//    
+
+    printf("eph: %f\n",focused_vessel->orbit.epoch);
+    printf("ecc: %f\n",focused_vessel->orbit.eccentricity);
+    printf("inc: %f\n",focused_vessel->orbit.inclination);
+    printf("lan: %f\n",focused_vessel->orbit.long_ascending_node);
+    printf("ma : %f\n",focused_vessel->orbit.mean_anomaly);
+    printf("mae : %f\n",focused_vessel->orbit.mean_anomaly_at_epoch);
+    printf("aop : %f\n",focused_vessel->orbit.argument_of_periapsis);
+    
+
+if(isKeyPressed(K_EDITOR_UP)) {
+    for (Vessel& v : vessels) {
+        step_physics_orbit_for_v(&v);
+    }
+}
+if(isKeyPressed(K_EDITOR_DOWN)) {
+    for (Vessel& v : vessels) {
+        step_rails_orbit_for_v(&v);
+    }
+}
+
+
     //Step vessel orbits
     for (Vessel& v : vessels) {
         //Step vessel orbit after checking if its on rails or simulated AND LOADED
         if (v.loaded && timewarp.is_physics_warp) {
-            step_physics_orbit_for_v(&v);
-
+            //step_physics_orbit_for_v(&v);
+            
             
         } else {
             //step_physics_orbit_for_v(&v);
             //printf("IN\n");
-            step_rails_orbit_for_v(&v);
+            //step_rails_orbit_for_v(&v);
             //            printf("OUT\n");
 
         }
@@ -154,9 +178,7 @@ void Universe::Update() {
     //auto im = linalg::normalize(focused_vessel->orbit.POS);
     //cam.yaw = linalg::atan2(im.x, im.y) * RAD_TO_DEG ;
  
-    //Deltatime stuff
-    cam.dt = clock.dt;
-    universal_time += (clock.dt * timewarp.warp_rate);
+    
     
     for (CelestialBody& c : planetarium.celestials) { 
 
