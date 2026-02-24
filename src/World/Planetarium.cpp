@@ -5,15 +5,15 @@
 
 using namespace rapidjson;
 
-void Planetarium::render_celestials() {
+void Planetarium::render_celestials(float fixed_bubble = 20000) {
 
-    if (focused_vessel == nullptr) { printf("E 218754: Cannot render planets!\n");return;}
+    if (focused_vessel == nullptr) { printf("E 218754: No Focused Vessel!\n");return;}
     if (celestials.size() == 0) { printf("E 128585: Cannot render planets!\n");return;}
 
     //Should i do distance from CAMERA instead??????
 
     for (CelestialBody& c : celestials) {
-        auto vp = planet_to_universe(focused_vessel->orbit.POS,1);
+        auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
 
         auto pp = planet_to_universe({0,0,0},find_body_by_name(c.name));
 
@@ -25,34 +25,30 @@ void Planetarium::render_celestials() {
         //Get draw length of body
         auto delta = pp - vp;
         float len = linalg::length(delta);
-        float altitude = len - c.radius;
+        float altitude = len - (c.radius);
 
         
-        glPushMatrix();
+        //printf("LEN %f\n",len);
+        
+        
         int mode = 0;
 
         //Check if vessel is low enough to render in nearby mode
-        //if (altitude < 700000) {
-        //    mode = 1;
-        //}
+        if (altitude < c.radius*1.1f) {
+            mode = 1;
+        }
 
+        //Horrific altitudes
+        if ((int)abs(altitude) > 104780001000) {
+            if (focused_vessel != nullptr)
+                focused_vessel->protoVessel.altitude = 9999999; //Fucked
+            return;
+        }
 
-
+        glPushMatrix();
         if (mode) {
             //Mode 1 PQS
             printf("Mode 1 not implemented!\n");
-            //Gonna have to gen PQS... UGHHHHHHHHHHHHHHHHHHHHHHHHHH
-
-            /*
-            auto calc_sight = [](float altitude, float radius) {
-                float calc;
-
-                return calc;
-            };
-*/
-            
-
-
 
         } else {
             auto obj = c.me;
@@ -60,15 +56,7 @@ void Planetarium::render_celestials() {
             {
                 //Mode 0 Distant
                 //Planet renderer works by scaling the glscale3f, and keeping the planet at a fixed distance
-
-                //The 1 is temporary
-                //auto vp = planet_to_universe(focused_vessel->orbit.POS,focused_vessel->home_body);
-
                 
-                //printf("Dist (m) to %s:%f\n",c.name.c_str(),len);
-                //printf("^ planet X is %f\n",c.orbit.POS.x);
-                //3000 meter bubble
-                float fixed_bubble = 3000;
 
                 glTranslatef(
                     -(v_x  / len)* fixed_bubble        * 1,
@@ -160,22 +148,21 @@ double Planetarium::get_soi(int index) {
 
 //Find closest attractor to a vessel
 int Planetarium::get_attractor(Vessel *v) {
-    int best = 0;
-    double lowest = INFINITY;
-    int i = 0;
-    for (CelestialBody &c : celestials) {
-        printf("THIS IS NOT WORKING YET!! USE C!! %s, %f\n",c.name.c_str(),v->orbit.epoch);
-        double soi = get_soi(i);
-        //HOW TO FIND THIS???
-        double distance_to_planet = 67000;
-        //Golf
-        double ans = distance_to_planet / soi;
-        if (ans < lowest) {
-            best = i;
-            lowest = ans;
-        }
+    int best = -1;
+    double best_score = INFINITY;
 
-        i++;
+    for (size_t i = 0; i < celestials.size(); ++i) {
+        const CelestialBody& c = celestials[i];
+        if (c.parent.empty()) continue; //Sun
+
+        double dist_to_planet = linalg::length(v->orbit.POS - c.orbit.POS);
+        double soi = get_soi(static_cast<int>(i));
+        double score = dist_to_planet / soi;
+
+        if (score < best_score) {
+            best_score = score;
+            best = static_cast<int>(i);
+        }
     }
     return best;
 }
@@ -325,7 +312,7 @@ int Planetarium::load_celestial_bodies(Bundle* resources) {
         printf("Added body %s.\n",cb.name.c_str());
 
     }
-
+    
     //Set mu of each body
     for (CelestialBody &c : celestials) {
         if (c.parent == "") continue;

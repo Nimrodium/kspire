@@ -3,6 +3,12 @@
 void Timewarp_Controller::lerp_rate(float dt) {
     warp_rate = linalg::lerp(warp_rate,target_warp_rate + 0.001,dt*3);
 }
+void Timewarp_Controller::exit_now() {
+    if (warp_index > 4) exited_rails = true;
+    warp_rate = 1;
+    target_warp_rate = 1;
+    warp_index = 0;
+}
 void Timewarp_Controller::tick(int cannot_enter_timewarp) {
     //Read key states
     bool up_oneshot = false;
@@ -48,7 +54,7 @@ void Timewarp_Controller::tick(int cannot_enter_timewarp) {
         is_physics_warp = true;
     }
 
-    //Telegraph
+    //Flag!
     if (up_oneshot && warp_index == 4) entered_rails = true;
     if (down_oneshot && warp_index == 3) exited_rails = true;
 

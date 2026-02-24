@@ -26,10 +26,11 @@ class Vessel {
     enum State {
         INACTIVE,
         ACTIVE,
-        DEAD
+        DEAD,
+
     };
 
-    
+
     ProtoVessel protoVessel;
     
     //Are parts loaded? (Also Physics range)

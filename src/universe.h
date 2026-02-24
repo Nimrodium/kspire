@@ -12,12 +12,17 @@
 class Universe {
     public:
 
+    bool in_map_view = false;
     
+
     DT clock;
     double universal_time = 0;
 
     Timewarp_Controller timewarp;
     
+
+    ModelGroup skybox;
+
     //Physics range things
     Flight flight;
     Camera cam;
@@ -44,7 +49,8 @@ class Universe {
     //Step physics orbits
     void step_physics_orbit_for_v(Vessel* v);
 
-    void render();
+    void render_flight();
+    void render_map();
 
     //Unload flight scene
     void pack();
@@ -54,4 +60,9 @@ class Universe {
     Bundle *parts_bundle;
     
     private:
+
+    void render_skybox();
+    bool map_button_held = false;
+
+    float map_zoom = -200;
 };

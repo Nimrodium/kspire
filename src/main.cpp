@@ -1,7 +1,6 @@
 #include "globals.h"
 #include "universe.h"
 #include "Utility/font.h"
-
 #include "Editor/VAB.h"
 #include "Utility/GameTexture.h"
 #include "Utility/PartLoader.h"
@@ -21,6 +20,7 @@ enum GameStates {
     FLIGHT,
     PRELOAD,
 };
+//If it crashes for some reason try rebuilding objects...
 
 
 GameStates current_state = GameStates::PRELOAD;
@@ -44,13 +44,13 @@ TEXTURE *screen;
 ProcessedPosition *processed;
 Vessel loading_vessel_buffer;
 
-template <typename T> void debug_print(std::string preamble, T value, int x, int y, TEXTURE *screen, std::string unit = "") {
+template <typename T> void screen_print(std::string preamble, T value, int x, int y, TEXTURE *screen, std::string unit = "") {
     preamble.append(std::to_string(value));
     preamble.append(unit);
     fonts.drawString(preamble.c_str(), 0xFFFF, *screen, x, y);
 }
 
-template <typename T> void debug_print(T value, int x, int y, TEXTURE *screen) {
+template <typename T> void screen_print(T value, int x, int y, TEXTURE *screen) {
     std::string preamble = std::to_string(value);
     fonts.drawString(preamble.c_str(), 0xFFFF, *screen, x, y);
 }
@@ -75,7 +75,7 @@ int scene_pack_vab() {
 
 int scene_load_flight() {
     loading = true;
-
+    uni.timewarp.exit_now();
     glColor3f(0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     current_state = GameStates::FLIGHT;
@@ -84,9 +84,11 @@ int scene_load_flight() {
 
     scene_pack_flight();
 
+    uni.skybox.load_group(&resource_bundle,"resources/skybox/skybox");
+
     uni.planetarium.clear_celestial_models();
     uni.planetarium.load_celestial_bodies(&resource_bundle);
-
+    printf("LOADED CELESTIALS\n");
     //Only using earth moon and sun right now
     uni.planetarium.celestials[0].load_model(&planet_bundle);
     uni.planetarium.celestials[1].load_model(&planet_bundle);
@@ -99,9 +101,11 @@ int scene_load_flight() {
     uni.vessels.emplace_back(std::move(new_vess));
     uni.focused_vessel = &uni.vessels.back();
     uni.focused_vessel->home_body = uni.planetarium.find_body_by_name("Earth");
+
+
+
     //Push buffer
     uni.focused_vessel->part_tree = loading_vessel_buffer.part_tree;
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     fonts.drawString("Loading complete!",0xFFFF,*screen,10,220);
@@ -263,9 +267,16 @@ int main()
 
     //vab.hide_vab = true;
     //Debug init scene
-    scene_load_menu();
-    //scene_load_flight();
+    //scene_load_menu();
+    scene_load_flight();
     //scene_load_vab();
+
+
+    //Test navball
+    ModelGroup nav;
+    nav.load_group(&resource_bundle,"resources/ui/navball");
+
+    printf("LNAV\n");
 
 
     //Move this please!!! u toopid
@@ -273,6 +284,9 @@ int main()
 
     ui_altitude.init(&resource_bundle,"resources/ui/altitude.png",screen);
     ui_altitude.tex.transparent_color = 0x00;
+
+    printf("LALT\n");
+
 
     #ifdef KSPIRE_PLATFORM_NSPIRE
     while(!isKeyPressed(K_ESC) && break_game == 0)
@@ -335,11 +349,65 @@ int main()
 
                 //Altitude
                 ui_altitude.draw(0,0);
-                debug_print("",(int)(uni.universal_time),2,3,screen,"s");
-                debug_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
+                screen_print("",(int)(uni.universal_time),2,3,screen,"s");
+                screen_print("",(int)(uni.focused_vessel->protoVessel.altitude/1000),85,3,screen,"km");
 
-                debug_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),200,220,screen);
+                screen_print("Warp: x ",(int)(uni.timewarp.warp_rate + 0.5f),100,220,screen);
+
+                /*
+                //Navball
+                {
+                    nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_ORTHOGRAPHIC);
+
+                    glClear(GL_DEPTH_BUFFER_BIT);
+                    glPushMatrix();
+                    //Test if navball exists...
+                    //Grrrr
+
+                    //NAVBALL CASE
+                    auto obj = &nav.objects[0];
+
+                    glTranslatef(
+                        280,200,
+                        500
+                    );
+
+                    glScale3f(35,35,35);
+                    glBindTexture(obj->texture);
+                    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+                    glPopMatrix();
+                    glPushMatrix();
+
+                    glClear(GL_DEPTH_BUFFER_BIT);
+                    //NAVBALL
+                    obj = &nav.objects[1];
+
+                    glTranslatef(
+                        280,200,
+                        280
+                    );
+
+                    auto stuff = uni.cam.wrapper();
+                    auto ang = linalg::atan2(uni.focused_vessel->orbit.POS.y,uni.focused_vessel->orbit.POS.x) * 57.29f;
+                    if (ang < 0) ang = 360.0f - ang;
+                    nglRotateX((float)fmod(ang,360.0f));
+                    nglRotateZ((float)fmod(ang,360.0f));
+                    nglRotateY(270);
+
+                    glScale3f(37,37,37);
+                    glBindTexture(obj->texture);
+                    nglDrawArray(obj->vertices, obj->count_vertices, obj->positions, obj->count_positions, processed, obj->draw_mode);
+
+                    glPopMatrix();
+                    //projection_mode = GLProjectionMode::GL_PROJECTION_PERSPECTIVE;
+                    nglSetProjectionMode(GLProjectionMode::GL_PROJECTION_PERSPECTIVE);
+
+                }*/
+
+
             }
+
+
             /*
             debug_print("SMA ",uni.focused_vessel->orbit.semi_major_axis,10,10,screen);
             debug_print("ECC ",uni.focused_vessel->orbit.eccentricity,10,30,screen);
@@ -354,6 +422,14 @@ int main()
         if (current_state == GameStates::EDITOR) {
 
             vab.Update();
+
+            //Show CATEGORY
+            auto cat_list = Parts.list_categories;
+            if ((unsigned int)vab.page_index < Parts.list_categories.size() && vab.page_index >= 0) {
+                //printf("%s\n",cat_list[vab.page_index].c_str());
+                fonts.drawStringCenter(cat_list[vab.page_index].c_str(),
+            0xFFFF, *screen,
+            67,-1);
 
         }
         if (current_state == GameStates::MENU) {
@@ -380,6 +456,8 @@ int main()
                 fonts.drawString(VERSION,0xFFFF,*screen,10,220);
             }
             #endif
+
+            }
 
 
         }
